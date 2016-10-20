@@ -612,8 +612,27 @@ void Group_1(BYTE opcode) {
 void Group_2_Move(BYTE opcode) {
   BYTE destination = opcode >> 4;
   BYTE source = opcode & 0x0F;
+  BYTE address;
   int destReg;
   int sourceReg;
+
+  switch (destination) {
+    case 0x06:
+      destReg = REGISTER_A;
+      break;
+    case 0x07:
+      destReg = REGISTER_B;
+      break;
+    case 0x08:
+      destReg = REGISTER_L;
+      break;
+    case 0x09:
+      destReg = REGISTER_H;
+      break;
+    case 0x0A:
+      destReg = REGISTER_M;
+      break;
+  }
 
   switch (source) {
     case 0x0B:
@@ -634,6 +653,16 @@ void Group_2_Move(BYTE opcode) {
   }
 
   Registers[destReg] = Registers[sourceReg];
+
+  // if (destReg == REGISTER_M) {
+  //   address = Registers[REGISTER_L];
+  //   address += (WORD) Registers[REGISTER_H] << 4;
+  //   if (address >= 0 && address <= MEMORY_SIZE) {
+  //     Memory[address] = Registers[sourceReg];
+  //   }
+  // } else {
+  //   Registers[destReg] = Registers[sourceReg];
+  // }
 }
 
 void execute(BYTE opcode) {
