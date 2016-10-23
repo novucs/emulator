@@ -636,7 +636,6 @@ void Group_1(BYTE opcode) {
 void Group_2_Move(BYTE opcode) {
   BYTE destination = opcode >> 4;
   BYTE source = opcode & 0x0F;
-  BYTE address;
   int destReg;
   int sourceReg;
 
@@ -679,7 +678,7 @@ void Group_2_Move(BYTE opcode) {
   Registers[destReg] = Registers[sourceReg];
 
   // if (destReg == REGISTER_M) {
-  //   address = Registers[REGISTER_L];
+  //   BYTE address = Registers[REGISTER_L];
   //   address += (WORD) Registers[REGISTER_H] << 4;
   //   if (address >= 0 && address <= MEMORY_SIZE) {
   //     Memory[address] = Registers[sourceReg];
