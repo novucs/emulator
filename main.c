@@ -385,75 +385,43 @@ void set_flag_z(BYTE inReg) {
   }
 }
 
+WORD getAddress(BYTE higher, BYTE lower) {
+  return (WORD) ((WORD) higher << 8) + lower;
+}
+
 void ldax(int id, int reg) {
-  BYTE LB = 0;
-  BYTE HB = 0;
-  WORD address = 0;
-  WORD data = 0;
+  if (id == 0) {
+    Registers[reg] = fetch();
+    return;
+  }
+
+  BYTE HB = fetch();
+  BYTE LB = fetch();
+  WORD address = getAddress(HB, LB);
+
   switch (id) {
-    case 0:
-      data = fetch();
-      Registers[reg] = data;
-      break;
     case 1:
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Registers[reg] = Memory[address];
-      }
-
       break;
     case 2:
       address += Index_Registers[REGISTER_X];
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Registers[reg] = Memory[address];
-      }
-
       break;
     case 3:
       address += Index_Registers[REGISTER_Y];
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Registers[reg] = Memory[address];
-      }
-
       break;
     case 4:
-      HB = fetch();
-      LB = fetch();
-      address = (WORD)((WORD)HB << 8) + LB;
       HB = Memory[address];
       LB = Memory[address + 1];
-      address = (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Registers[reg] = Memory[address];
-      }
-
+      address = getAddress(HB, LB);
       break;
     case 5:
-      HB = fetch();
-      LB = fetch();
-      address = (WORD)((WORD)HB << 8) + LB;
       HB = Memory[address];
       LB = Memory[address + 1];
-      address = (WORD)((WORD)HB << 8) + LB;
-      address += Index_Registers[REGISTER_X];
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Registers[reg] = Memory[address];
-      }
-
+      address = getAddress(HB, LB) + Index_Registers[REGISTER_X];
       break;
+  }
+
+  if (address >= 0 && address < MEMORY_SIZE) {
+    Registers[reg] = Memory[address];
   }
 }
 
