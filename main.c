@@ -389,12 +389,7 @@ WORD join_address(BYTE higher, BYTE lower) {
   return (WORD) ((WORD) higher << 8) + lower;
 }
 
-void ldax(int id, int reg) {
-  if (id == 0) {
-    Registers[reg] = fetch();
-    return;
-  }
-
+WORD fetch_address(int id, int reg) {
   BYTE HB = fetch();
   BYTE LB = fetch();
   WORD address = join_address(HB, LB);
@@ -420,40 +415,50 @@ void ldax(int id, int reg) {
       break;
   }
 
+  return address;
+}
+
+/**
+ * Implementation for LDAA and LDAB.
+ * Loads memory into accumulator.
+ *
+ * @param id  method for retrieving address.
+ * @param reg the register to use.
+ */
+void ldaa_ldab(int id, int reg) {
+  // ID 0 does not load from memory.
+  if (id == 0) {
+    Registers[reg] = fetch();
+    return;
+  }
+
+  // Fetch the address.
+  WORD address = fetch_address(id, reg);
+
+  // Load memory into accumulator.
   if (address >= 0 && address < MEMORY_SIZE) {
     Registers[reg] = Memory[address];
   }
 }
 
-void storx(int id, int reg) {
-  BYTE HB = fetch();
-  BYTE LB = fetch();
-  WORD address = join_address(HB, LB);
+/**
+ * Implementation for STORA and STORB.
+ * Stores accumulator into memory.
+ *
+ * @param id  method for retrieving address.
+ * @param reg the register to use.
+ */
+void stora_storb(int id, int reg) {
+  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
+  id -= 10;
 
-  switch (id) {
-    case 0xB:
-      break;
-    case 0xC:
-      address += Index_Registers[REGISTER_X];
-      break;
-    case 0xD:
-      address += Index_Registers[REGISTER_Y];
-      break;
-    case 0xE:
-      HB = Memory[address];
-      LB = Memory[address + 1];
-      address = join_address(HB, LB);
-      break;
-    case 0xF:
-      HB = Memory[address];
-      LB = Memory[address + 1];
-      address = join_address(HB, LB) + Index_Registers[REGISTER_X];
-      break;
-   }
+  // Fetch the address.
+  WORD address = fetch_address(id, reg);
 
-   if (address >= 0 && address < MEMORY_SIZE) {
-     Memory[address] = Registers[reg];
-   }
+  // Store accumulator into memory if address is valid.
+  if (address >= 0 && address < MEMORY_SIZE) {
+    Memory[address] = Registers[reg];
+  }
 }
 
 void Group_1(BYTE opcode) {
@@ -468,7 +473,7 @@ void Group_1(BYTE opcode) {
   switch (opcode) {
     /*
     * LDAA and LDAB
-    * Loads memory into accummulator
+    * Loads memory into accumulator
     */
     case 0x0A:
     case 0x1A:
@@ -482,12 +487,12 @@ void Group_1(BYTE opcode) {
     case 0x3B:
     case 0x4B:
     case 0x5B:
-      ldax(id, reg);
+      ldaa_ldab(id, reg);
       break;
 
     /*
      * STORA and STORB
-     * Stores accummulator into memory
+     * Stores accumulator into memory
      */
     case 0xBA:
     case 0xCA:
@@ -499,7 +504,7 @@ void Group_1(BYTE opcode) {
     case 0xDB:
     case 0xEB:
     case 0xFB:
-      storx(id, reg);
+      stora_storb(id, reg);
       break;
 
     /*
