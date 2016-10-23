@@ -457,11 +457,82 @@ void ldax(int id, int reg) {
   }
 }
 
+void storx(int id, int reg) {
+  BYTE LB = 0;
+  BYTE HB = 0;
+  WORD address = 0;
+  WORD data = 0;
+  switch (id) {
+    case 0xB:
+      HB = fetch();
+      LB = fetch();
+      address += (WORD)((WORD)HB << 8) + LB;
+
+      if (address >= 0 && address < MEMORY_SIZE) {
+        Memory[address] = Registers[reg];
+      }
+
+      break;
+    case 0xC:
+      address += Index_Registers[REGISTER_X];
+      HB = fetch();
+      LB = fetch();
+      address += (WORD)((WORD)HB << 8) + LB;
+
+      if (address >= 0 && address < MEMORY_SIZE) {
+        Memory[address] = Registers[reg];
+      }
+
+      break;
+    case 0xD:
+      address += Index_Registers[REGISTER_Y];
+      HB = fetch();
+      LB = fetch();
+      address += (WORD)((WORD)HB << 8) + LB;
+
+      if (address >= 0 && address < MEMORY_SIZE) {
+        Memory[address] = Registers[reg];
+      }
+
+      break;
+    case 0xE:
+      HB = fetch();
+      LB = fetch();
+      address = (WORD) ((WORD) HB << 8) + LB;
+      HB = Memory[address];
+      LB = Memory[address + 1];
+      address = (WORD)((WORD)HB << 8) + LB;
+
+      if (address >= 0 && address < MEMORY_SIZE) {
+        Memory[address] = Registers[reg];
+      }
+
+      break;
+    case 0xF:
+      HB = fetch();
+      LB = fetch();
+      address = (WORD)((WORD)HB << 8) + LB;
+      HB = Memory[address];
+      LB = Memory[address + 1];
+      address = (WORD)((WORD)HB << 8) + LB;
+      address += Index_Registers[REGISTER_X];
+
+      if (address >= 0 && address < MEMORY_SIZE) {
+        Memory[address] = Registers[reg];
+      }
+
+      break;
+   }
+}
+
 void Group_1(BYTE opcode) {
   BYTE LB = 0;
   BYTE HB = 0;
   WORD address = 0;
   WORD data = 0;
+
+  int id = (opcode & 0xF0) >> 4;
+  int reg = (opcode & 0x0F) == 0x0A ? REGISTER_A : REGISTER_B;
 
   switch (opcode) {
     /*
@@ -480,7 +551,7 @@ void Group_1(BYTE opcode) {
     case 0x3B:
     case 0x4B:
     case 0x5B:
-      ldax((opcode & 0xF0) >> 4, (opcode & 0x0F) == 0x0A ? REGISTER_A : REGISTER_B);
+      ldax(id, reg);
       break;
 
     /*
@@ -488,123 +559,17 @@ void Group_1(BYTE opcode) {
      * Stores accummulator into memory
      */
     case 0xBA:
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[REGISTER_A];
-      }
-
-      break;
     case 0xCA:
-      address += Index_Registers[REGISTER_X];
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[REGISTER_A];
-      }
-
-      break;
     case 0xDA:
-      address += Index_Registers[REGISTER_Y];
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[REGISTER_A];
-      }
-
-      break;
     case 0xEA:
-      HB = fetch();
-      LB = fetch();
-      address = (WORD) ((WORD) HB << 8) + LB;
-      HB = Memory[address];
-      LB = Memory[address + 1];
-      address = (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[REGISTER_A];
-      }
-
-      break;
     case 0xFA:
-      HB = fetch();
-      LB = fetch();
-      address = (WORD)((WORD)HB << 8) + LB;
-      HB = Memory[address];
-      LB = Memory[address + 1];
-      address = (WORD)((WORD)HB << 8) + LB;
-      address += Index_Registers[REGISTER_X];
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[REGISTER_A];
-      }
-
+    case 0xBB:
+    case 0xCB:
+    case 0xDB:
+    case 0xEB:
+    case 0xFB:
+      storx(id, reg);
       break;
-     case 0xBB:
-       HB = fetch();
-       LB = fetch();
-       address += (WORD)((WORD)HB << 8) + LB;
-
-       if (address >= 0 && address < MEMORY_SIZE) {
-         Memory[address] = Registers[REGISTER_B];
-       }
-
-       break;
-     case 0xCB:
-       address += Index_Registers[REGISTER_X];
-       HB = fetch();
-       LB = fetch();
-       address += (WORD)((WORD)HB << 8) + LB;
-
-       if (address >= 0 && address < MEMORY_SIZE) {
-         Memory[address] = Registers[REGISTER_B];
-       }
-
-       break;
-     case 0xDB:
-       address += Index_Registers[REGISTER_Y];
-       HB = fetch();
-       LB = fetch();
-       address += (WORD)((WORD)HB << 8) + LB;
-
-       if (address >= 0 && address < MEMORY_SIZE) {
-         Memory[address] = Registers[REGISTER_B];
-       }
-
-       break;
-     case 0xEB:
-       HB = fetch();
-       LB = fetch();
-       address = (WORD) ((WORD) HB << 8) + LB;
-       HB = Memory[address];
-       LB = Memory[address + 1];
-       address = (WORD)((WORD)HB << 8) + LB;
-
-       if (address >= 0 && address < MEMORY_SIZE) {
-         Memory[address] = Registers[REGISTER_B];
-       }
-
-       break;
-     case 0xFB:
-       HB = fetch();
-       LB = fetch();
-       address = (WORD)((WORD)HB << 8) + LB;
-       HB = Memory[address];
-       LB = Memory[address + 1];
-       address = (WORD)((WORD)HB << 8) + LB;
-       address += Index_Registers[REGISTER_X];
-
-       if (address >= 0 && address < MEMORY_SIZE) {
-         Memory[address] = Registers[REGISTER_B];
-       }
-
-       break;
 
     /*
      * MVI
