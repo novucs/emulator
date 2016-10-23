@@ -733,52 +733,52 @@ void emulate() {
   memory_in_range = true;
   sanity = 0;
 
-  printf("                    A  B  L  H  X  Y  SP\n");
+  // printf("                    A  B  L  H  X  Y  SP\n");
 
   while ((!halt) && (memory_in_range) && (sanity < 200)) {
-    printf("%04X ", ProgramCounter);                       // Print current address
+    // printf("%04X ", ProgramCounter);                       // Print current address
     opcode = fetch();
     execute(opcode);
 
-    printf("%s  ", opcode_mneumonics[opcode]);              // Print current opcode
+    // printf("%s  ", opcode_mneumonics[opcode]);              // Print current opcode
+    //
+    // printf("%02X ", Registers[REGISTER_A]);
+    // printf("%02X ", Registers[REGISTER_B]);
+    // printf("%02X ", Registers[REGISTER_L]);
+    // printf("%02X ", Registers[REGISTER_H]);
+    // printf("%02X ", Index_Registers[REGISTER_X]);
+    // printf("%02X ", Index_Registers[REGISTER_Y]);
+    // printf("%04X ", StackPointer);                          // Print Stack Pointer
+    //
+    // if ((Flags & FLAG_I) == FLAG_I) {
+    //   printf("I=1 ");
+    // } else {
+    //   printf("I=0 ");
+    // }
+    //
+    // if ((Flags & FLAG_Z) == FLAG_Z) {
+    //   printf("Z=1 ");
+    // } else {
+    //   printf("Z=0 ");
+    // }
+    //
+    // if ((Flags & FLAG_N) == FLAG_N) {
+    //   printf("N=1 ");
+    // } else {
+    //   printf("N=0 ");
+    // }
+    //
+    // if ((Flags & FLAG_C) == FLAG_C) {
+    //   printf("C=1 ");
+    // } else {
+    //   printf("C=0 ");
+    // }
 
-    printf("%02X ", Registers[REGISTER_A]);
-    printf("%02X ", Registers[REGISTER_B]);
-    printf("%02X ", Registers[REGISTER_L]);
-    printf("%02X ", Registers[REGISTER_H]);
-    printf("%02X ", Index_Registers[REGISTER_X]);
-    printf("%02X ", Index_Registers[REGISTER_Y]);
-    printf("%04X ", StackPointer);                          // Print Stack Pointer
-
-    if ((Flags & FLAG_I) == FLAG_I) {
-      printf("I=1 ");
-    } else {
-      printf("I=0 ");
-    }
-
-    if ((Flags & FLAG_Z) == FLAG_Z) {
-      printf("Z=1 ");
-    } else {
-      printf("Z=0 ");
-    }
-
-    if ((Flags & FLAG_N) == FLAG_N) {
-      printf("N=1 ");
-    } else {
-      printf("N=0 ");
-    }
-
-    if ((Flags & FLAG_C) == FLAG_C) {
-      printf("C=1 ");
-    } else {
-      printf("C=0 ");
-    }
-
-    printf("\n");              // New line
+    // printf("\n");              // New line
     sanity++;
   }
 
-  printf("\n");        // New line
+  // printf("\n");        // New line
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1087,7 +1087,7 @@ void test_and_mark() {
     memset(buffer, '\0', sizeof(buffer));
 
     if (recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (SOCKADDR *)&client_addr, &len) != SOCKET_ERROR) {
-      printf("Incoming Data: %s \n", buffer);
+      // printf("Incoming Data: %s \n", buffer);
 
       //if (strcmp(buffer, "Testing complete") == 1)
       if (sscanf(buffer, "Testing complete %d", &mark) == 1) {
