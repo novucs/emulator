@@ -3,7 +3,3 @@ CAY
 MYA
 CSA
 LX
-ABA
-SBA
-AAB
-SAB

@@ -610,6 +610,26 @@ void Group_1(BYTE opcode) {
     case 0xAA:
       store_stackpointer(id);
       break;
+
+    // ABA - Adds accumulator B into accumulator A
+    case 0xF3:
+      Registers[REGISTER_A] += Registers[REGISTER_B];
+      break;
+
+    // SBA - Subtracts accumulator B from accumulator A
+    case 0xF4:
+      Registers[REGISTER_A] -= Registers[REGISTER_B];
+      break;
+
+    // AAB - Adds accumulator A into accumulator B
+    case 0xF5:
+      Registers[REGISTER_B] += Registers[REGISTER_A];
+      break;
+
+    // SAB - Subtracts accumulator A from accumulator B
+    case 0xF6:
+      Registers[REGISTER_B] -= Registers[REGISTER_A];
+      break;
   }
 }
 
