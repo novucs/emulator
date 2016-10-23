@@ -1,5 +1,4 @@
 MOVE
-LDX
 STOX
 LDY
 STOY

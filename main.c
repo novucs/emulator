@@ -419,13 +419,12 @@ WORD fetch_address(int id, int reg) {
 }
 
 /**
- * Implementation for LDAA and LDAB.
  * Loads memory into accumulator.
  *
  * @param id  method for retrieving address.
  * @param reg the register to use.
  */
-void ldaa_ldab(int id, int reg) {
+void load_memory(int id, int reg) {
   // ID 0 does not load from memory.
   if (id == 0) {
     Registers[reg] = fetch();
@@ -442,13 +441,12 @@ void ldaa_ldab(int id, int reg) {
 }
 
 /**
- * Implementation for STORA and STORB.
  * Stores accumulator into memory.
  *
  * @param id  method for retrieving address.
  * @param reg the register to use.
  */
-void stora_storb(int id, int reg) {
+void store_accumulator(int id, int reg) {
   // Convert ID to LDAA/LDAB format for reusing the address fetching function.
   id -= 10;
 
@@ -468,43 +466,54 @@ void Group_1(BYTE opcode) {
   WORD data = 0;
 
   int id = (opcode & 0xF0) >> 4;
-  int reg = (opcode & 0x0F) == 0x0A ? REGISTER_A : REGISTER_B;
 
   switch (opcode) {
-    /*
-    * LDAA and LDAB
-    * Loads memory into accumulator
-    */
+    // LDAA
     case 0x0A:
     case 0x1A:
     case 0x2A:
     case 0x3A:
     case 0x4A:
     case 0x5A:
+      load_memory(id, REGISTER_A);
+      break;
+
+    // LDAB
     case 0x0B:
     case 0x1B:
     case 0x2B:
     case 0x3B:
     case 0x4B:
     case 0x5B:
-      ldaa_ldab(id, reg);
+      load_memory(id, REGISTER_B);
       break;
 
-    /*
-     * STORA and STORB
-     * Stores accumulator into memory
-     */
+    // LDX
+    case 0x0E:
+    case 0x1E:
+    case 0x2E:
+    case 0x3E:
+    case 0x4E:
+    case 0x5E:
+      load_memory(id, REGISTER_X);
+      break;
+
+    // STORA
     case 0xBA:
     case 0xCA:
     case 0xDA:
     case 0xEA:
     case 0xFA:
+      store_accumulator(id, REGISTER_A);
+      break;
+
+    // STORB
     case 0xBB:
     case 0xCB:
     case 0xDB:
     case 0xEB:
     case 0xFB:
-      stora_storb(id, reg);
+      store_accumulator(id, REGISTER_B);
       break;
 
     /*
