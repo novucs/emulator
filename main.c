@@ -535,6 +535,15 @@ void Group_1(BYTE opcode) {
       store_accumulator(id, REGISTER_X);
       break;
 
+    // STOY
+    case 0xBD:
+    case 0xCD:
+    case 0xDD:
+    case 0xED:
+    case 0xFD:
+      store_accumulator(id, REGISTER_Y);
+      break;
+
     /*
      * MVI
      * Loads memory into register

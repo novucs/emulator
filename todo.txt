@@ -1,5 +1,4 @@
 MOVE
-STOY
 CAY
 MYA
 STOS
