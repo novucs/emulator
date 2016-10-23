@@ -385,7 +385,7 @@ void set_flag_z(BYTE inReg) {
   }
 }
 
-WORD getAddress(BYTE higher, BYTE lower) {
+WORD join_address(BYTE higher, BYTE lower) {
   return (WORD) ((WORD) higher << 8) + lower;
 }
 
@@ -397,7 +397,7 @@ void ldax(int id, int reg) {
 
   BYTE HB = fetch();
   BYTE LB = fetch();
-  WORD address = getAddress(HB, LB);
+  WORD address = join_address(HB, LB);
 
   switch (id) {
     case 1:
@@ -411,12 +411,12 @@ void ldax(int id, int reg) {
     case 4:
       HB = Memory[address];
       LB = Memory[address + 1];
-      address = getAddress(HB, LB);
+      address = join_address(HB, LB);
       break;
     case 5:
       HB = Memory[address];
       LB = Memory[address + 1];
-      address = getAddress(HB, LB) + Index_Registers[REGISTER_X];
+      address = join_address(HB, LB) + Index_Registers[REGISTER_X];
       break;
   }
 
