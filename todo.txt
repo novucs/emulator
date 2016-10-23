@@ -1,7 +1,6 @@
 MOVE
 CAY
 MYA
-STOS
 CSA
 LX
 ABA

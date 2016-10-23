@@ -389,7 +389,7 @@ WORD join_address(BYTE higher, BYTE lower) {
   return (WORD) ((WORD) higher << 8) + lower;
 }
 
-WORD fetch_address(int id, int reg) {
+WORD fetch_address(int id) {
   BYTE HB = fetch();
   BYTE LB = fetch();
   WORD address = join_address(HB, LB);
@@ -419,20 +419,20 @@ WORD fetch_address(int id, int reg) {
 }
 
 /**
- * Loads memory into accumulator.
+ * Loads accumulator from memory.
  *
  * @param id  method for retrieving address.
  * @param reg the register to use.
  */
-void load_memory(int id, int reg) {
-  // ID 0 does not load from memory.
+void load_accumulator(int id, int reg) {
+  // ID 0 does not require an address.
   if (id == 0) {
     Registers[reg] = fetch();
     return;
   }
 
   // Fetch the address.
-  WORD address = fetch_address(id, reg);
+  WORD address = fetch_address(id);
 
   // Load memory into accumulator.
   if (address >= 0 && address < MEMORY_SIZE) {
@@ -451,7 +451,7 @@ void store_accumulator(int id, int reg) {
   id -= 10;
 
   // Fetch the address.
-  WORD address = fetch_address(id, reg);
+  WORD address = fetch_address(id);
 
   // Store accumulator into memory if address is valid.
   if (address >= 0 && address < MEMORY_SIZE) {
@@ -459,11 +459,54 @@ void store_accumulator(int id, int reg) {
   }
 }
 
+/**
+ * Loads stackpointer from memory.
+ *
+ * @param id method for retrieving address.
+ */
+void load_stackpointer(int id) {
+  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
+  id -= 2;
+
+  // ID 0 does not require an address.
+  if (id == 0) {
+    StackPointer = (fetch() << 8) + fetch();
+    return;
+  }
+
+  // Fetch the address.
+  WORD address = fetch_address(id);
+
+  // Load stackpointer from memory if address is valid.
+  if (address >= 0 && address < MEMORY_SIZE - 1) {
+    StackPointer = ((WORD) Memory[address] << 8) + Memory[address + 1];
+  }
+}
+
+/**
+ * Stores stackpointer into memory.
+ *
+ * @param id method for retrieving address.
+ */
+void store_stackpointer(int id) {
+  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
+  id -= 5;
+
+  // Fetch the address.
+  WORD address = fetch_address(id);
+
+  // Store stackpointer into memory if address is valid.
+  if (address >= 0 && address < MEMORY_SIZE - 1) {
+    Memory[address] = (WORD) (StackPointer >> 8);
+    Memory[address + 1] = (WORD) StackPointer;
+  }
+}
+
 void Group_1(BYTE opcode) {
-  BYTE LB = 0;
-  BYTE HB = 0;
-  WORD address = 0;
-  WORD data = 0;
+  // BYTE LB = 0;
+  // BYTE HB = 0;
+  // WORD address = 0;
+  // WORD data = 0;
 
   int id = (opcode & 0xF0) >> 4;
 
@@ -475,7 +518,7 @@ void Group_1(BYTE opcode) {
     case 0x3A:
     case 0x4A:
     case 0x5A:
-      load_memory(id, REGISTER_A);
+      load_accumulator(id, REGISTER_A);
       break;
 
     // LDAB
@@ -485,7 +528,7 @@ void Group_1(BYTE opcode) {
     case 0x3B:
     case 0x4B:
     case 0x5B:
-      load_memory(id, REGISTER_B);
+      load_accumulator(id, REGISTER_B);
       break;
 
     // LDX
@@ -495,7 +538,7 @@ void Group_1(BYTE opcode) {
     case 0x3E:
     case 0x4E:
     case 0x5E:
-      load_memory(id, REGISTER_X);
+      load_accumulator(id, REGISTER_X);
       break;
 
     // LDY
@@ -505,7 +548,7 @@ void Group_1(BYTE opcode) {
     case 0x3F:
     case 0x4F:
     case 0x5F:
-      load_memory(id, REGISTER_Y);
+      load_accumulator(id, REGISTER_Y);
       break;
 
     // STORA
@@ -544,87 +587,28 @@ void Group_1(BYTE opcode) {
       store_accumulator(id, REGISTER_Y);
       break;
 
-    /*
-     * MVI
-     * Loads memory into register
-     */
+    // MVI - Loads memory into register
     case 0x1C:
-      data = fetch();
-      Registers[REGISTER_L] = data;
+      Registers[REGISTER_L] = fetch();
       break;
 
-    /*
-     * LODS
-     * Loads memory into stackpointer
-     */
+    // LODS
     case 0x20:
-      data = fetch();
-      StackPointer = data << 8;
-      StackPointer += fetch();
-      break;
-    // case 0x30:
-    //   HB = fetch();
-    //   LB = fetch();
-    //   address += (WORD) ((WORD) HB << 8) + LB;
-    //
-    //   if (address > 0 && address < MEMORY_SIZE - 1) {
-    //     StackPointer = (WORD) Memory[address] << 8;
-    //     StackPointer += Memory[address + 1];
-    //   }
-    //
-    //   break;
+    case 0x30:
     case 0x40:
-      address += Index_Registers[REGISTER_X];
-      HB = fetch();
-      LB = fetch();
-      address += (WORD) ((WORD) HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE - 1) {
-        StackPointer = (WORD) Memory[address] << 8;
-        StackPointer += Memory[address + 1];
-      }
-
-      break;
     case 0x50:
-      address += Index_Registers[REGISTER_Y];
-      HB = fetch();
-      LB = fetch();
-      address += (WORD) ((WORD) HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE +-1) {
-        StackPointer = (WORD) Memory[address] << 8;
-        StackPointer += Memory[address + 1];
-      }
-
-      break;
     case 0x60:
-      HB = fetch();
-      LB = fetch();
-      address = (WORD) ((WORD) HB << 8) + LB;
-      HB = Memory[address];
-      LB = Memory[address + 1];
-      address = (WORD) ((WORD) HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE - 1) {
-        StackPointer = (WORD) Memory[address] << 8;
-        StackPointer += Memory[address + 1];
-      }
-
-      break;
     case 0x70:
-      HB = fetch();
-      LB = fetch();
-      address = (WORD) ((WORD) HB << 8) + LB;
-      HB = Memory[address];
-      LB = Memory[address + 1];
-      address = (WORD) ((WORD) HB << 8) + LB;
-      address += Index_Registers[REGISTER_X];
+      load_stackpointer(id);
+      break;
 
-      if (address >= 0 && address < MEMORY_SIZE - 1) {
-        StackPointer = (WORD) Memory[address] << 8;
-        StackPointer += Memory[address + 1];
-      }
-
+    // STOS
+    case 0x6A:
+    case 0x7A:
+    case 0x8A:
+    case 0x9A:
+    case 0xAA:
+      store_stackpointer(id);
       break;
   }
 }
