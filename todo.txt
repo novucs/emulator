@@ -1,5 +1,4 @@
 MOVE
-STOX
 LDY
 STOY
 CAY
