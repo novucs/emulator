@@ -498,6 +498,16 @@ void Group_1(BYTE opcode) {
       load_memory(id, REGISTER_X);
       break;
 
+    // LDY
+    case 0x0F:
+    case 0x1F:
+    case 0x2F:
+    case 0x3F:
+    case 0x4F:
+    case 0x5F:
+      load_memory(id, REGISTER_Y);
+      break;
+
     // STORA
     case 0xBA:
     case 0xCA:

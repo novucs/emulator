@@ -1,5 +1,4 @@
 MOVE
-LDY
 STOY
 CAY
 MYA
