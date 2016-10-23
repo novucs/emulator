@@ -426,70 +426,33 @@ void ldax(int id, int reg) {
 }
 
 void storx(int id, int reg) {
-  BYTE LB = 0;
-  BYTE HB = 0;
-  WORD address = 0;
-  WORD data = 0;
+  BYTE HB = fetch();
+  BYTE LB = fetch();
+  WORD address = join_address(HB, LB);
+
   switch (id) {
     case 0xB:
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[reg];
-      }
-
       break;
     case 0xC:
       address += Index_Registers[REGISTER_X];
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[reg];
-      }
-
       break;
     case 0xD:
       address += Index_Registers[REGISTER_Y];
-      HB = fetch();
-      LB = fetch();
-      address += (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[reg];
-      }
-
       break;
     case 0xE:
-      HB = fetch();
-      LB = fetch();
-      address = (WORD) ((WORD) HB << 8) + LB;
       HB = Memory[address];
       LB = Memory[address + 1];
-      address = (WORD)((WORD)HB << 8) + LB;
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[reg];
-      }
-
+      address = join_address(HB, LB);
       break;
     case 0xF:
-      HB = fetch();
-      LB = fetch();
-      address = (WORD)((WORD)HB << 8) + LB;
       HB = Memory[address];
       LB = Memory[address + 1];
-      address = (WORD)((WORD)HB << 8) + LB;
-      address += Index_Registers[REGISTER_X];
-
-      if (address >= 0 && address < MEMORY_SIZE) {
-        Memory[address] = Registers[reg];
-      }
-
+      address = join_address(HB, LB) + Index_Registers[REGISTER_X];
       break;
+   }
+
+   if (address >= 0 && address < MEMORY_SIZE) {
+     Memory[address] = Registers[reg];
    }
 }
 
