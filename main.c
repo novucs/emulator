@@ -621,6 +621,11 @@ void Group_1(BYTE opcode) {
       Registers[REGISTER_A] = Registers[REGISTER_Y];
       break;
 
+    // CSA - Transfers status register to accumulator
+    case 0xF2:
+      Registers[REGISTER_A] = Registers[REGISTER_Y];
+      break;
+
     // ABA - Adds accumulator B into accumulator A
     case 0xF3:
       Registers[REGISTER_A] += Registers[REGISTER_B];

@@ -1,8 +1,8 @@
 -- Incomplete --
-CSA
 LX
 
 -- Needs Revision --
 MOVE: Lower marks when implemented
 CAY: Assumes the accumulator is register A
 MYA: Assumes the accumulator is register A
+CSA - Assumes the accumulator is register A and status register is register Y
