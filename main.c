@@ -611,6 +611,13 @@ void Group_1(BYTE opcode) {
       store_stackpointer(id);
       break;
 
+    // LX - Loads memory into register pair
+    case 0x0C:
+    case 0x0D:
+      Registers[REGISTER_H] = fetch();
+      Registers[REGISTER_L] = fetch();
+      break;
+
     // CAY - Transfers accumulator to register Y
     case 0xF0:
       Registers[REGISTER_Y] = Registers[REGISTER_A];
