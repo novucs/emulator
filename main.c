@@ -419,12 +419,12 @@ WORD fetch_address(int id) {
 }
 
 /**
- * Loads accumulator from memory.
+ * Loads register from memory.
  *
  * @param id  method for retrieving address.
  * @param reg the register to use.
  */
-void load_accumulator(int id, int reg) {
+void load_register(int id, int reg) {
   // ID 0 does not require an address.
   if (id == 0) {
     Registers[reg] = fetch();
@@ -441,12 +441,12 @@ void load_accumulator(int id, int reg) {
 }
 
 /**
- * Stores accumulator into memory.
+ * Stores register into memory.
  *
  * @param id  method for retrieving address.
  * @param reg the register to use.
  */
-void store_accumulator(int id, int reg) {
+void store_register(int id, int reg) {
   // Convert ID to LDAA/LDAB format for reusing the address fetching function.
   id -= 10;
 
@@ -518,7 +518,7 @@ void Group_1(BYTE opcode) {
     case 0x3A:
     case 0x4A:
     case 0x5A:
-      load_accumulator(id, REGISTER_A);
+      load_register(id, REGISTER_A);
       break;
 
     // LDAB
@@ -528,7 +528,7 @@ void Group_1(BYTE opcode) {
     case 0x3B:
     case 0x4B:
     case 0x5B:
-      load_accumulator(id, REGISTER_B);
+      load_register(id, REGISTER_B);
       break;
 
     // LDX
@@ -538,7 +538,7 @@ void Group_1(BYTE opcode) {
     case 0x3E:
     case 0x4E:
     case 0x5E:
-      load_accumulator(id, REGISTER_X);
+      load_register(id, REGISTER_X);
       break;
 
     // LDY
@@ -548,7 +548,7 @@ void Group_1(BYTE opcode) {
     case 0x3F:
     case 0x4F:
     case 0x5F:
-      load_accumulator(id, REGISTER_Y);
+      load_register(id, REGISTER_Y);
       break;
 
     // STORA
@@ -557,7 +557,7 @@ void Group_1(BYTE opcode) {
     case 0xDA:
     case 0xEA:
     case 0xFA:
-      store_accumulator(id, REGISTER_A);
+      store_register(id, REGISTER_A);
       break;
 
     // STORB
@@ -566,7 +566,7 @@ void Group_1(BYTE opcode) {
     case 0xDB:
     case 0xEB:
     case 0xFB:
-      store_accumulator(id, REGISTER_B);
+      store_register(id, REGISTER_B);
       break;
 
     // STOX
@@ -575,7 +575,7 @@ void Group_1(BYTE opcode) {
     case 0xDC:
     case 0xEC:
     case 0xFC:
-      store_accumulator(id, REGISTER_X);
+      store_register(id, REGISTER_X);
       break;
 
     // STOY
@@ -584,7 +584,7 @@ void Group_1(BYTE opcode) {
     case 0xDD:
     case 0xED:
     case 0xFD:
-      store_accumulator(id, REGISTER_Y);
+      store_register(id, REGISTER_Y);
       break;
 
     // MVI - Loads memory into register
