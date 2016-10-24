@@ -611,6 +611,16 @@ void Group_1(BYTE opcode) {
       store_stackpointer(id);
       break;
 
+    // CAY
+    case 0xF0:
+      Registers[REGISTER_Y] = Registers[REGISTER_A];
+      break;
+
+    // MYA
+    case 0xF1:
+      Registers[REGISTER_A] = Registers[REGISTER_Y];
+      break;
+
     // ABA - Adds accumulator B into accumulator A
     case 0xF3:
       Registers[REGISTER_A] += Registers[REGISTER_B];
