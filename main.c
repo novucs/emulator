@@ -798,6 +798,11 @@ void Group_1(BYTE opcode) {
     case 0x07:
       Flags = Flags & (0xFF - FLAG_I);
       break;
+
+    // STI - Set interrupt flag
+    case 0x08:
+      Flags = Flags | FLAG_I;
+      break;
   }
 }
 

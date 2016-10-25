@@ -1,5 +1,5 @@
 -- Incomplete --
-STI
+n/a
 
 -- Needs Revision --
 CAY: Assumes the accumulator is register A
