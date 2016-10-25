@@ -528,6 +528,12 @@ void store_stackpointer(int id) {
   }
 }
 
+void set_flags_znc(WORD inReg) {
+  set_flag_c(inReg);
+  set_flag_n((BYTE) inReg);
+  set_flag_z((BYTE) inReg);
+}
+
 /**
  * Adds register to accumulator with carry.
  *
@@ -541,9 +547,19 @@ void adc(int accumulator, int reg) {
   }
 
   Registers[accumulator] = (BYTE) answer;
-  set_flag_c(answer);
-  set_flag_n((BYTE) answer);
-  set_flag_z((BYTE) answer);
+  set_flags_znc(answer);
+}
+
+/**
+ * Adds register to accumulator.
+ *
+ * @param accumulator the accumulator to add to.
+ * @param reg         the register to add.
+ */
+void add(int accumulator, int reg) {
+  WORD answer = (WORD) Registers[accumulator] + (WORD) Registers[reg];
+  Registers[accumulator] = (BYTE) answer;
+  set_flags_znc(answer);
 }
 
 /**
@@ -554,9 +570,7 @@ void adc(int accumulator, int reg) {
  */
 void cmp(int accumulator, int reg) {
   WORD answer = (WORD) Registers[accumulator] + (WORD) Registers[reg];
-  set_flag_c(answer);
-  set_flag_n((BYTE) answer);
-  set_flag_z((BYTE) answer);
+  set_flags_znc(answer);
 }
 
 void Group_1(BYTE opcode) {
@@ -746,6 +760,26 @@ void Group_1(BYTE opcode) {
       break;
     case 0x85:
       cmp(REGISTER_B, REGISTER_M);
+      break;
+
+    // ADD - Register added to accumulator
+    case 0x33:
+      adc(REGISTER_A, REGISTER_L);
+      break;
+    case 0x43:
+      adc(REGISTER_A, REGISTER_H);
+      break;
+    case 0x53:
+      adc(REGISTER_A, REGISTER_M);
+      break;
+    case 0x63:
+      adc(REGISTER_A, REGISTER_L);
+      break;
+    case 0x73:
+      adc(REGISTER_A, REGISTER_H);
+      break;
+    case 0x83:
+      adc(REGISTER_A, REGISTER_M);
       break;
   }
 }
