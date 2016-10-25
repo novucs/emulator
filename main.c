@@ -630,6 +630,18 @@ void _and(int accumulator, int reg) {
   set_flag_c(Registers[accumulator]);
 }
 
+/**
+ * Register bitwise exclusive or with accumulator.
+ *
+ * @param accumulator the accumulator.
+ * @param reg         the register.
+ */
+void _xor(int accumulator, int reg) {
+  Registers[accumulator] ^= Registers[reg];
+  set_flag_n(Registers[accumulator]);
+  set_flag_c(Registers[accumulator]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -919,6 +931,26 @@ void Group_1(BYTE opcode) {
       break;
     case 0x87:
       _and(REGISTER_B, REGISTER_M);
+      break;
+
+    // OR - Register bitwise exclusive or with accumulator
+    case 0x38:
+      _xor(REGISTER_A, REGISTER_L);
+      break;
+    case 0x48:
+      _xor(REGISTER_A, REGISTER_H);
+      break;
+    case 0x58:
+      _xor(REGISTER_A, REGISTER_M);
+      break;
+    case 0x68:
+      _xor(REGISTER_B, REGISTER_L);
+      break;
+    case 0x78:
+      _xor(REGISTER_B, REGISTER_H);
+      break;
+    case 0x88:
+      _xor(REGISTER_B, REGISTER_M);
       break;
 
     // CLC - Clear carry flag

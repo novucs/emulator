@@ -1,5 +1,4 @@
 -- Incomplete --
-XOR
 BIT
 SBIA
 SBIB
@@ -72,6 +71,7 @@ SWI
 RTI
 
 -- Needs Revision --
+XOR - *-H
 AND - *-H B-L
 OR - *-H
 SUB - *-H
