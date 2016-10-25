@@ -606,6 +606,12 @@ void cmp(int accumulator, int reg) {
   set_flags_znc(answer);
 }
 
+void _or(int accumulator, int reg) {
+  Registers[accumulator] |= Registers[reg];
+  set_flag_n(Registers[accumulator]);
+  set_flag_c(Registers[accumulator]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -855,6 +861,26 @@ void Group_1(BYTE opcode) {
       break;
     case 0x84:
       sub(REGISTER_B, REGISTER_M);
+      break;
+
+    // OR - Register bitwise inclusive or with accumulator
+    case 0x36:
+      _or(REGISTER_A, REGISTER_L);
+      break;
+    case 0x46:
+      _or(REGISTER_A, REGISTER_H);
+      break;
+    case 0x56:
+      _or(REGISTER_A, REGISTER_M);
+      break;
+    case 0x66:
+      _or(REGISTER_B, REGISTER_L);
+      break;
+    case 0x76:
+      _or(REGISTER_B, REGISTER_H);
+      break;
+    case 0x86:
+      _or(REGISTER_B, REGISTER_M);
       break;
 
     // CLC - Clear carry flag
