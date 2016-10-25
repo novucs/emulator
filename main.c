@@ -528,20 +528,32 @@ void store_stackpointer(int id) {
   }
 }
 
-void adc(int reg1, int reg2) {
-  WORD answer = (WORD) Registers[reg1] + (WORD) Registers[reg2];
+/**
+ * Adds register to accumulator with carry.
+ *
+ * @param accumulator the accumulator to add to.
+ * @param reg         the register to add.
+ */
+void adc(int accumulator, int reg) {
+  WORD answer = (WORD) Registers[accumulator] + (WORD) Registers[reg];
   if ((Flags & FLAG_C) != 0) {
     answer++;
   }
 
-  Registers[reg1] = (BYTE) answer;
+  Registers[accumulator] = (BYTE) answer;
   set_flag_c(answer);
   set_flag_n((BYTE) answer);
   set_flag_z((BYTE) answer);
 }
 
-void cmp(int reg1, int reg2) {
-  WORD answer = (WORD) Registers[reg1] + (WORD) Registers[reg2];
+/**
+ * Register compared to accumulator.
+ *
+ * @param accumulator the accumulator to compare.
+ * @param reg         the register to compare.
+ */
+void cmp(int accumulator, int reg) {
+  WORD answer = (WORD) Registers[accumulator] + (WORD) Registers[reg];
   set_flag_c(answer);
   set_flag_n((BYTE) answer);
   set_flag_z((BYTE) answer);
