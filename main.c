@@ -36,8 +36,8 @@ char trc_file[MAX_BUFFER_SIZE];
 #define FLAG_N 0x02
 #define FLAG_C 0x01
 #define REGISTER_M 4
-#define REGISTER_B 2
 #define REGISTER_A 3
+#define REGISTER_B 2
 #define REGISTER_H 1
 #define REGISTER_L 0
 BYTE Registers[5];
@@ -374,14 +374,40 @@ BYTE fetch() {
   return byte;
 }
 
-void set_flag_z(BYTE inReg) {
-  BYTE reg;
-  reg = inReg;
+// carry flag c
+// zerp flag z
+// interrupt flag i
+// negative flag n
 
-  if ((reg & 0x80) != 0) {     // msbit set
+void set_flag_z(BYTE inReg) {
+  if (inReg == 0) {
+    Flags = Flags | FLAG_Z;
+  } else {
+    Flags = Flags & (0xFF - FLAG_Z);
+  }
+}
+
+void set_flag_n(BYTE inReg) {
+  if ((inReg & 0x80) == 0x80) {
     Flags = Flags | FLAG_N;
   } else {
     Flags = Flags & (0xFF - FLAG_N);
+  }
+
+  // if ((reg & 0x80) != 0) {
+  //   Flags = Flags | FLAG_N;
+  // } else {
+  //   Flags = Flags & (0xFF - FLAG_N);
+  // }
+}
+
+void set_flag_c(WORD inReg) {
+  if (inReg >= 0x100) {
+    // Set carry flag
+    Flags = Flags | FLAG_C;
+  } else {
+    // Clear carry flag
+    Flags = Flags & (0xFF - FLAG_C);
   }
 }
 
@@ -507,6 +533,7 @@ void Group_1(BYTE opcode) {
   // BYTE HB = 0;
   // WORD address = 0;
   // WORD data = 0;
+  WORD temp_word;
 
   int id = (opcode & 0xF0) >> 4;
 
@@ -621,6 +648,7 @@ void Group_1(BYTE opcode) {
     // CAY - Transfers accumulator to register Y
     case 0xF0:
       Registers[REGISTER_Y] = Registers[REGISTER_A];
+      set_flag_n(Registers[REGISTER_Y]);
       break;
 
     // MYA - Transfers register Y to accumulator
@@ -636,6 +664,8 @@ void Group_1(BYTE opcode) {
     // ABA - Adds accumulator B into accumulator A
     case 0xF3:
       Registers[REGISTER_A] += Registers[REGISTER_B];
+      set_flag_z(Registers[REGISTER_A]);
+      set_flag_n(Registers[REGISTER_A]);
       break;
 
     // SBA - Subtracts accumulator B from accumulator A
@@ -651,6 +681,41 @@ void Group_1(BYTE opcode) {
     // SAB - Subtracts accumulator A from accumulator B
     case 0xF6:
       Registers[REGISTER_B] -= Registers[REGISTER_A];
+      break;
+
+    // ADC - Register added to accumulator with carry A,L
+    case 0x31:
+      temp_word = (WORD) Registers[REGISTER_A] + (WORD) Registers[REGISTER_L];
+      if ((Flags & FLAG_C) != 0) {
+        temp_word++;
+      }
+
+      if (temp_word >= 0x100) {
+        // Set carry flag
+        Flags = Flags | FLAG_C;
+      } else {
+        // Clear carry flag
+        Flags = Flags & (0xFF - FLAG_C);
+      }
+
+      Registers[REGISTER_A] = (BYTE) temp_word;
+      set_flag_n((BYTE) temp_word);
+      set_flag_z((BYTE) temp_word);
+      break;
+
+    case 0x35:
+      temp_word = (WORD) Registers[REGISTER_A] + (WORD) Registers[REGISTER_L];
+
+      if (temp_word >= 0x100) {
+        // Set carry flag
+        Flags = Flags | FLAG_C;
+      } else {
+        // Clear carry flag
+        Flags = Flags & (0xFF - FLAG_C);
+      }
+
+      set_flag_n((BYTE) temp_word);
+      set_flag_z((BYTE) temp_word);
       break;
   }
 }
