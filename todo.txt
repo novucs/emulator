@@ -1,5 +1,4 @@
 -- Incomplete --
-CLI
 STI
 
 -- Needs Revision --
