@@ -1,5 +1,18 @@
 -- Incomplete --
-n/a
+ADC
+CMP
+ADD
+CAY
+MYA
+CSA
+ABA
+SBA
+AAB
+SAB
+CLC
+STC
+CLI
+STI
 
 -- Needs Revision --
 CAY: Assumes the accumulator is register A

@@ -696,6 +696,7 @@ void Group_1(BYTE opcode) {
       set_flag_z((BYTE) temp_word);
       break;
 
+    // CMP - Register compared to accumulator A,L
     case 0x35:
       temp_word = (WORD) Registers[REGISTER_A] + (WORD) Registers[REGISTER_L];
       set_flag_c(temp_word);
