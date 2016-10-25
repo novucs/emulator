@@ -2,6 +2,4 @@
 n/a
 
 -- Needs Revision --
-CAY: Assumes the accumulator is register A
-MYA: Assumes the accumulator is register A
-LX: Implementation unclear and no marks added
+n/a
