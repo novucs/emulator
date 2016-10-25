@@ -556,6 +556,22 @@ void adc(int accumulator, int reg) {
 }
 
 /**
+ * Subtracts register to accumulator with carry.
+ *
+ * @param accumulator the accumulator to subtract from.
+ * @param reg         the register to subtract.
+ */
+void sbc(int accumulator, int reg) {
+  WORD answer = (WORD) Registers[accumulator] - (WORD) Registers[reg];
+  if ((Flags & FLAG_C) != 0) {
+    answer--;
+  }
+
+  Registers[accumulator] = (BYTE) answer;
+  set_flags_znc(answer);
+}
+
+/**
  * Adds register to accumulator.
  *
  * @param accumulator the accumulator to add to.
@@ -747,6 +763,26 @@ void Group_1(BYTE opcode) {
       break;
     case 0x81:
       adc(REGISTER_B, REGISTER_M);
+      break;
+
+    // SBC - Register subtracted from accumulator with carry
+    case 0x32:
+      sbc(REGISTER_A, REGISTER_L);
+      break;
+    case 0x42:
+      sbc(REGISTER_A, REGISTER_H);
+      break;
+    case 0x52:
+      sbc(REGISTER_A, REGISTER_M);
+      break;
+    case 0x62:
+      sbc(REGISTER_B, REGISTER_L);
+      break;
+    case 0x72:
+      sbc(REGISTER_B, REGISTER_H);
+      break;
+    case 0x82:
+      sbc(REGISTER_B, REGISTER_M);
       break;
 
     // CMP - Register compared to accumulator
