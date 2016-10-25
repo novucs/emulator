@@ -788,6 +788,11 @@ void Group_1(BYTE opcode) {
     case 0x05:
       Flags = Flags & (0xFF - FLAG_C);
       break;
+
+    // STC - Set carry flag
+    case 0x06:
+      Flags = Flags | FLAG_C;
+      break;
   }
 }
 

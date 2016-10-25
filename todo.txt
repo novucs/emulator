@@ -1,5 +1,4 @@
 -- Incomplete --
-STC
 CLI
 STI
 
