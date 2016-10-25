@@ -72,4 +72,9 @@ SWI
 RTI
 
 -- Needs Revision --
-n/a
+AND - *-H B-L
+OR - *-H
+SUB - *-H
+CMP - *-H *-L
+SBC - *-H
+ADC - *-H
