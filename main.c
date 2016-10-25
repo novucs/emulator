@@ -653,7 +653,7 @@ void Group_1(BYTE opcode) {
 
     // MYA - Transfers register Y to accumulator
     case 0xF1:
-      Flags = Registers[REGISTER_Y];
+      Registers[REGISTER_A] = Registers[REGISTER_Y];
       break;
 
     // CSA - Transfers status register to accumulator

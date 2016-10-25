@@ -5,7 +5,6 @@ n/a
 MOVE: Lower marks when implemented
 CAY: Assumes the accumulator is register A
 MYA: Assumes the accumulator is register A
-CSA: Assumes the accumulator is register A and status register is register Y
 LX: Implementation unclear and no marks added
 ABA: No marks added
 SBA: No marks added
