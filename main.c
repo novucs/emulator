@@ -528,6 +528,11 @@ void store_stackpointer(int id) {
   }
 }
 
+/**
+ * Sets flags ZNC for the last calculation.
+ *
+ * @param inReg the number last calculated.
+ */
 void set_flags_znc(WORD inReg) {
   set_flag_c(inReg);
   set_flag_n((BYTE) inReg);
