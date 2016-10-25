@@ -2,7 +2,6 @@
 n/a
 
 -- Needs Revision --
-MOVE: Lower marks when implemented
 CAY: Assumes the accumulator is register A
 MYA: Assumes the accumulator is register A
 LX: Implementation unclear and no marks added
