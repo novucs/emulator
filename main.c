@@ -690,30 +690,15 @@ void Group_1(BYTE opcode) {
         temp_word++;
       }
 
-      if (temp_word >= 0x100) {
-        // Set carry flag
-        Flags = Flags | FLAG_C;
-      } else {
-        // Clear carry flag
-        Flags = Flags & (0xFF - FLAG_C);
-      }
-
       Registers[REGISTER_A] = (BYTE) temp_word;
+      set_flag_c(temp_word);
       set_flag_n((BYTE) temp_word);
       set_flag_z((BYTE) temp_word);
       break;
 
     case 0x35:
       temp_word = (WORD) Registers[REGISTER_A] + (WORD) Registers[REGISTER_L];
-
-      if (temp_word >= 0x100) {
-        // Set carry flag
-        Flags = Flags | FLAG_C;
-      } else {
-        // Clear carry flag
-        Flags = Flags & (0xFF - FLAG_C);
-      }
-
+      set_flag_c(temp_word);
       set_flag_n((BYTE) temp_word);
       set_flag_z((BYTE) temp_word);
       break;
