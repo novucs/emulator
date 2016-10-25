@@ -656,44 +656,44 @@ void Group_1(BYTE opcode) {
 }
 
 void Group_2_Move(BYTE opcode) {
-  BYTE destination = opcode >> 4;
-  BYTE source = opcode & 0x0F;
+  BYTE source = opcode >> 4;
+  BYTE destination = opcode & 0x0F;
   int destReg;
   int sourceReg;
 
-  switch (destination) {
+  switch (source) {
     case 0x06:
-      destReg = REGISTER_A;
+      sourceReg = REGISTER_A;
       break;
     case 0x07:
-      destReg = REGISTER_B;
+      sourceReg = REGISTER_B;
       break;
     case 0x08:
-      destReg = REGISTER_L;
+      sourceReg = REGISTER_L;
       break;
     case 0x09:
-      destReg = REGISTER_H;
+      sourceReg = REGISTER_H;
       break;
     case 0x0A:
-      destReg = REGISTER_M;
+      sourceReg = REGISTER_M;
       break;
   }
 
-  switch (source) {
+  switch (destination) {
     case 0x0B:
-      sourceReg = REGISTER_A;
+      destReg = REGISTER_A;
       break;
     case 0x0C:
-      sourceReg = REGISTER_B;
+      destReg = REGISTER_B;
       break;
     case 0x0D:
-      sourceReg = REGISTER_L;
+      destReg = REGISTER_L;
       break;
     case 0x0E:
-      sourceReg = REGISTER_H;
+      destReg = REGISTER_H;
       break;
     case 0x0F:
-      sourceReg = REGISTER_M;
+      destReg = REGISTER_M;
       break;
   }
 
