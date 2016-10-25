@@ -783,6 +783,11 @@ void Group_1(BYTE opcode) {
     case 0x83:
       add(REGISTER_A, REGISTER_M);
       break;
+
+    // CLC - Clear carry flag
+    case 0x05:
+      Flags = Flags & (0xFF - FLAG_C);
+      break;
   }
 }
 
