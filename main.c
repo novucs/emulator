@@ -764,22 +764,22 @@ void Group_1(BYTE opcode) {
 
     // ADD - Register added to accumulator
     case 0x33:
-      adc(REGISTER_A, REGISTER_L);
+      add(REGISTER_A, REGISTER_L);
       break;
     case 0x43:
-      adc(REGISTER_A, REGISTER_H);
+      add(REGISTER_A, REGISTER_H);
       break;
     case 0x53:
-      adc(REGISTER_A, REGISTER_M);
+      add(REGISTER_A, REGISTER_M);
       break;
     case 0x63:
-      adc(REGISTER_A, REGISTER_L);
+      add(REGISTER_A, REGISTER_L);
       break;
     case 0x73:
-      adc(REGISTER_A, REGISTER_H);
+      add(REGISTER_A, REGISTER_H);
       break;
     case 0x83:
-      adc(REGISTER_A, REGISTER_M);
+      add(REGISTER_A, REGISTER_M);
       break;
   }
 }
