@@ -528,13 +528,26 @@ void store_stackpointer(int id) {
   }
 }
 
-void Group_1(BYTE opcode) {
-  // BYTE LB = 0;
-  // BYTE HB = 0;
-  // WORD address = 0;
-  // WORD data = 0;
-  WORD temp_word;
+void adc(int reg1, int reg2) {
+  WORD answer = (WORD) Registers[reg1] + (WORD) Registers[reg2];
+  if ((Flags & FLAG_C) != 0) {
+    answer++;
+  }
 
+  Registers[reg1] = (BYTE) answer;
+  set_flag_c(answer);
+  set_flag_n((BYTE) answer);
+  set_flag_z((BYTE) answer);
+}
+
+void cmp(int reg1, int reg2) {
+  WORD answer = (WORD) Registers[reg1] + (WORD) Registers[reg2];
+  set_flag_c(answer);
+  set_flag_n((BYTE) answer);
+  set_flag_z((BYTE) answer);
+}
+
+void Group_1(BYTE opcode) {
   int id = (opcode & 0xF0) >> 4;
 
   switch (opcode) {
@@ -683,25 +696,44 @@ void Group_1(BYTE opcode) {
       Registers[REGISTER_B] -= Registers[REGISTER_A];
       break;
 
-    // ADC - Register added to accumulator with carry A,L
+    // ADC - Register added to accumulator with carry
     case 0x31:
-      temp_word = (WORD) Registers[REGISTER_A] + (WORD) Registers[REGISTER_L];
-      if ((Flags & FLAG_C) != 0) {
-        temp_word++;
-      }
-
-      Registers[REGISTER_A] = (BYTE) temp_word;
-      set_flag_c(temp_word);
-      set_flag_n((BYTE) temp_word);
-      set_flag_z((BYTE) temp_word);
+      adc(REGISTER_A, REGISTER_L);
+      break;
+    case 0x41:
+      adc(REGISTER_A, REGISTER_H);
+      break;
+    case 0x51:
+      adc(REGISTER_A, REGISTER_M);
+      break;
+    case 0x61:
+      adc(REGISTER_A, REGISTER_L);
+      break;
+    case 0x71:
+      adc(REGISTER_A, REGISTER_H);
+      break;
+    case 0x81:
+      adc(REGISTER_A, REGISTER_M);
       break;
 
-    // CMP - Register compared to accumulator A,L
+    // CMP - Register compared to accumulator
     case 0x35:
-      temp_word = (WORD) Registers[REGISTER_A] + (WORD) Registers[REGISTER_L];
-      set_flag_c(temp_word);
-      set_flag_n((BYTE) temp_word);
-      set_flag_z((BYTE) temp_word);
+      cmp(REGISTER_A, REGISTER_L);
+      break;
+    case 0x45:
+      cmp(REGISTER_A, REGISTER_H);
+      break;
+    case 0x55:
+      cmp(REGISTER_A, REGISTER_M);
+      break;
+    case 0x65:
+      cmp(REGISTER_B, REGISTER_L);
+      break;
+    case 0x75:
+      cmp(REGISTER_B, REGISTER_H);
+      break;
+    case 0x85:
+      cmp(REGISTER_B, REGISTER_M);
       break;
   }
 }

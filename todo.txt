@@ -1,6 +1,4 @@
 -- Incomplete --
-ADC
-CMP
 ADD
 CAY
 MYA
