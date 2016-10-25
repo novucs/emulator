@@ -703,23 +703,25 @@ void Group_1(BYTE opcode) {
     // ABA - Adds accumulator B into accumulator A
     case 0xF3:
       Registers[REGISTER_A] += Registers[REGISTER_B];
-      set_flag_z(Registers[REGISTER_A]);
-      set_flag_n(Registers[REGISTER_A]);
+      set_flags_znc(Registers[REGISTER_A]);
       break;
 
     // SBA - Subtracts accumulator B from accumulator A
     case 0xF4:
       Registers[REGISTER_A] -= Registers[REGISTER_B];
+      set_flags_znc(Registers[REGISTER_A]);
       break;
 
     // AAB - Adds accumulator A into accumulator B
     case 0xF5:
       Registers[REGISTER_B] += Registers[REGISTER_A];
+      set_flags_znc(Registers[REGISTER_B]);
       break;
 
     // SAB - Subtracts accumulator A from accumulator B
     case 0xF6:
       Registers[REGISTER_B] -= Registers[REGISTER_A];
+      set_flags_znc(Registers[REGISTER_B]);
       break;
 
     // ADC - Register added to accumulator with carry

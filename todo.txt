@@ -1,11 +1,4 @@
 -- Incomplete --
-CAY
-MYA
-CSA
-ABA
-SBA
-AAB
-SAB
 CLC
 STC
 CLI
@@ -15,7 +8,3 @@ STI
 CAY: Assumes the accumulator is register A
 MYA: Assumes the accumulator is register A
 LX: Implementation unclear and no marks added
-ABA: No marks added
-SBA: No marks added
-AAB: No marks added
-SAB: No marks added
