@@ -584,6 +584,18 @@ void add(int accumulator, int reg) {
 }
 
 /**
+ * Subtracts register from accumulator.
+ *
+ * @param accumulator the accumulator to subtract from.
+ * @param reg         the register to subtract.
+ */
+void sub(int accumulator, int reg) {
+  WORD answer = (WORD) Registers[accumulator] - (WORD) Registers[reg];
+  Registers[accumulator] = (BYTE) answer;
+  set_flags_znc(answer);
+}
+
+/**
  * Register compared to accumulator.
  *
  * @param accumulator the accumulator to compare.
@@ -823,6 +835,26 @@ void Group_1(BYTE opcode) {
       break;
     case 0x83:
       add(REGISTER_B, REGISTER_M);
+      break;
+
+    // SUB - Register subtracted from accumulator
+    case 0x34:
+      sub(REGISTER_A, REGISTER_L);
+      break;
+    case 0x44:
+      sub(REGISTER_A, REGISTER_H);
+      break;
+    case 0x54:
+      sub(REGISTER_A, REGISTER_M);
+      break;
+    case 0x64:
+      sub(REGISTER_B, REGISTER_L);
+      break;
+    case 0x74:
+      sub(REGISTER_B, REGISTER_H);
+      break;
+    case 0x84:
+      sub(REGISTER_B, REGISTER_M);
       break;
 
     // CLC - Clear carry flag
