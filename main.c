@@ -579,7 +579,7 @@ void cmp(int accumulator, int reg) {
 }
 
 void Group_1(BYTE opcode) {
-  int id = (opcode & 0xF0) >> 4;
+  int id = opcode >> 4;
 
   switch (opcode) {
     // LDAA
