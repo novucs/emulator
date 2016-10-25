@@ -1,5 +1,4 @@
 -- Incomplete --
-BIT
 SBIA
 SBIB
 CPIA
@@ -71,8 +70,9 @@ SWI
 RTI
 
 -- Needs Revision --
+BIT - *-H
 XOR - *-H
-AND - *-H B-L
+AND - *-H
 OR - *-H
 SUB - *-H
 CMP - *-H *-L

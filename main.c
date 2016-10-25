@@ -614,8 +614,8 @@ void cmp(int accumulator, int reg) {
  */
 void _or(int accumulator, int reg) {
   Registers[accumulator] |= Registers[reg];
+  set_flag_z(Registers[accumulator]);
   set_flag_n(Registers[accumulator]);
-  set_flag_c(Registers[accumulator]);
 }
 
 /**
@@ -626,8 +626,8 @@ void _or(int accumulator, int reg) {
  */
 void _and(int accumulator, int reg) {
   Registers[accumulator] &= Registers[reg];
+  set_flag_z(Registers[accumulator]);
   set_flag_n(Registers[accumulator]);
-  set_flag_c(Registers[accumulator]);
 }
 
 /**
@@ -638,8 +638,20 @@ void _and(int accumulator, int reg) {
  */
 void _xor(int accumulator, int reg) {
   Registers[accumulator] ^= Registers[reg];
+  set_flag_z(Registers[accumulator]);
   set_flag_n(Registers[accumulator]);
-  set_flag_c(Registers[accumulator]);
+}
+
+/**
+ * Register bit tested with with accumulator.
+ *
+ * @param accumulator the accumulator.
+ * @param reg         the register.
+ */
+void _bit(int accumulator, int reg) {
+  BYTE answer = Registers[accumulator] & Registers[reg];
+  set_flag_z(answer);
+  set_flag_n(answer);
 }
 
 void Group_1(BYTE opcode) {
@@ -951,6 +963,26 @@ void Group_1(BYTE opcode) {
       break;
     case 0x88:
       _xor(REGISTER_B, REGISTER_M);
+      break;
+
+    // BIT - Register bit tested with accumulator
+    case 0x39:
+      _bit(REGISTER_A, REGISTER_L);
+      break;
+    case 0x49:
+      _bit(REGISTER_A, REGISTER_H);
+      break;
+    case 0x59:
+      _bit(REGISTER_A, REGISTER_M);
+      break;
+    case 0x69:
+      _bit(REGISTER_B, REGISTER_L);
+      break;
+    case 0x79:
+      _bit(REGISTER_B, REGISTER_H);
+      break;
+    case 0x89:
+      _bit(REGISTER_B, REGISTER_M);
       break;
 
     // CLC - Clear carry flag
