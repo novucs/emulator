@@ -740,13 +740,13 @@ void Group_1(BYTE opcode) {
       adc(REGISTER_A, REGISTER_M);
       break;
     case 0x61:
-      adc(REGISTER_A, REGISTER_L);
+      adc(REGISTER_B, REGISTER_L);
       break;
     case 0x71:
-      adc(REGISTER_A, REGISTER_H);
+      adc(REGISTER_B, REGISTER_H);
       break;
     case 0x81:
-      adc(REGISTER_A, REGISTER_M);
+      adc(REGISTER_B, REGISTER_M);
       break;
 
     // CMP - Register compared to accumulator
@@ -780,13 +780,13 @@ void Group_1(BYTE opcode) {
       add(REGISTER_A, REGISTER_M);
       break;
     case 0x63:
-      add(REGISTER_A, REGISTER_L);
+      add(REGISTER_B, REGISTER_L);
       break;
     case 0x73:
-      add(REGISTER_A, REGISTER_H);
+      add(REGISTER_B, REGISTER_H);
       break;
     case 0x83:
-      add(REGISTER_A, REGISTER_M);
+      add(REGISTER_B, REGISTER_M);
       break;
 
     // CLC - Clear carry flag
