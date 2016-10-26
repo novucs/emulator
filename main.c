@@ -1004,6 +1004,13 @@ void Group_1(BYTE opcode) {
     case 0x08:
       Flags = Flags | FLAG_I;
       break;
+
+    // INCA - Increment accumulator
+    case 0xD0:
+      Registers[REGISTER_A]++;
+      set_flag_z(Registers[REGISTER_A]);
+      set_flag_n(Registers[REGISTER_A]);
+      break;
   }
 }
 
