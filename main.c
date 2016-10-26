@@ -654,6 +654,15 @@ void _bit(int accumulator, int reg) {
   set_flag_n(answer);
 }
 
+/**
+ * Arithmetic shift left accumulator
+ */
+void sal_accumulator(int accumulator) {
+  WORD answer = Registers[accumulator] << 1;
+  Registers[accumulator] = (BYTE) answer;
+  set_flags_znc(answer);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1031,6 +1040,11 @@ void Group_1(BYTE opcode) {
       Registers[REGISTER_B]--;
       set_flag_z(Registers[REGISTER_B]);
       set_flag_n(Registers[REGISTER_B]);
+      break;
+
+    // SALA - Arithmetic shift left accumulator
+    case 0xD4:
+      sal_accumulator(REGISTER_A);
       break;
   }
 }
