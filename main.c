@@ -1025,6 +1025,13 @@ void Group_1(BYTE opcode) {
       set_flag_z(Registers[REGISTER_A]);
       set_flag_n(Registers[REGISTER_A]);
       break;
+
+    // DECB - Decrement accumulator
+    case 0xE1:
+      Registers[REGISTER_B]--;
+      set_flag_z(Registers[REGISTER_B]);
+      set_flag_n(Registers[REGISTER_B]);
+      break;
   }
 }
 
