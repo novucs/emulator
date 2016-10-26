@@ -1046,6 +1046,11 @@ void Group_1(BYTE opcode) {
     case 0xD4:
       sal_accumulator(REGISTER_A);
       break;
+
+    // SALB - Arithmetic shift left accumulator
+    case 0xE4:
+      sal_accumulator(REGISTER_B);
+      break;
   }
 }
 
