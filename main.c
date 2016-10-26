@@ -1011,6 +1011,13 @@ void Group_1(BYTE opcode) {
       set_flag_z(Registers[REGISTER_A]);
       set_flag_n(Registers[REGISTER_A]);
       break;
+
+    // INCB - Increment accumulator
+    case 0xE0:
+      Registers[REGISTER_B]++;
+      set_flag_z(Registers[REGISTER_B]);
+      set_flag_n(Registers[REGISTER_B]);
+      break;
   }
 }
 
