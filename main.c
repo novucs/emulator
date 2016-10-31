@@ -655,7 +655,9 @@ void _bit(int accumulator, int reg) {
 }
 
 /**
- * Arithmetic shift left accumulator
+ * Arithmetic shift left accumulator.
+ *
+ * @param accumulator the accumulator.
  */
 void sal_accumulator(int accumulator) {
   WORD answer = Registers[accumulator] << 1;
