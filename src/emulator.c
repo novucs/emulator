@@ -1085,6 +1085,11 @@ void Group_1(BYTE opcode) {
         Registers[REGISTER_A] = Memory[StackPointer];
       }
       break;
+
+    // JMP - Loads memory into program counter
+    case 0x10:
+      ProgramCounter = fetch_address(1);
+      break;
   }
 }
 
