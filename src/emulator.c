@@ -673,7 +673,6 @@ lsr_accumulator(int accumulator) {
 
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
-  BYTE data;
 
   switch (opcode) {
     // LDAA
@@ -1073,8 +1072,6 @@ void Group_1(BYTE opcode) {
 
     // PUSH - Pushes register onto the stack
     case 0xBE:
-      Memory[StackPointer] = fetch();
-      StackPointer--;
       if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
         Memory[StackPointer] = Registers[REGISTER_A];
         StackPointer--;
@@ -1083,8 +1080,10 @@ void Group_1(BYTE opcode) {
 
     // POP - Pop the top of the stack to the register
     case 0xBF:
-      StackPointer++;
-      data = Memory[StackPointer];
+      if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
+        StackPointer++;
+        Registers[REGISTER_A] = Memory[StackPointer];
+      }
       break;
   }
 }
