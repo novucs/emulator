@@ -71,3 +71,4 @@ SUB - *-H
 CMP - *-H *-L
 SBC - *-H
 ADC - *-H
+JSR - Less marks when implemented

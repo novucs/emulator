@@ -1073,21 +1073,28 @@ void Group_1(BYTE opcode) {
     // PUSH - Pushes register onto the stack
     case 0xBE:
       if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
-        Memory[StackPointer] = Registers[REGISTER_A];
-        StackPointer--;
+        Memory[StackPointer--] = Registers[REGISTER_A];
       }
       break;
 
     // POP - Pop the top of the stack to the register
     case 0xBF:
       if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
-        StackPointer++;
-        Registers[REGISTER_A] = Memory[StackPointer];
+        Registers[REGISTER_A] = Memory[++StackPointer];
       }
       break;
 
     // JMP - Loads memory into program counter
     case 0x10:
+      ProgramCounter = fetch_address(1);
+      break;
+
+    // JSR - Jump subroutine
+    case 0x21:
+      if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
+        Memory[StackPointer--] = (BYTE) ProgramCounter;
+        Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
+      }
       ProgramCounter = fetch_address(1);
       break;
   }
