@@ -1097,6 +1097,13 @@ void Group_1(BYTE opcode) {
       }
       ProgramCounter = fetch_address(1);
       break;
+
+    // RET - Return from subroutine
+    case 0x4C:
+      if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 2) {
+        ProgramCounter = join_address(Memory[++StackPointer], Memory[++StackPointer]);
+      }
+      break;
   }
 }
 
