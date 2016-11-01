@@ -665,8 +665,15 @@ void sal_accumulator(int accumulator) {
   set_flags_znc(answer);
 }
 
+lsr_accumulator(int accumulator) {
+  BYTE answer = Registers[accumulator] >> 1;
+  Registers[accumulator] = (BYTE) answer;
+  set_flags_znc(answer);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
+  BYTE data;
 
   switch (opcode) {
     // LDAA
@@ -1052,6 +1059,32 @@ void Group_1(BYTE opcode) {
     // SALB - Arithmetic shift left accumulator
     case 0xE4:
       sal_accumulator(REGISTER_B);
+      break;
+
+    // LSRA - Shift right accumulator
+    case 0xD6:
+      lsr_accumulator(REGISTER_A);
+      break;
+
+    // LSRB - Shift right accumulator
+    case 0xE6:
+      lsr_accumulator(REGISTER_B);
+      break;
+
+    // PUSH - Pushes register onto the stack
+    case 0xBE:
+      Memory[StackPointer] = fetch();
+      StackPointer--;
+      if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
+        Memory[StackPointer] = Registers[REGISTER_A];
+        StackPointer--;
+      }
+      break;
+
+    // POP - Pop the top of the stack to the register
+    case 0xBF:
+      StackPointer++;
+      data = Memory[StackPointer];
       break;
   }
 }
