@@ -706,6 +706,15 @@ void ori_accumulator(int accumulator) {
   set_flag_z(data);
 }
 
+void inc_memory(int id) {
+  WORD address = fetch_address(id);
+  if (address >= 0 && address < MEMORY_SIZE) {
+    Memory[address]++;
+    set_flag_n(Memory[address]);
+    set_flag_z(Memory[address]);
+  }
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1055,6 +1064,21 @@ void Group_1(BYTE opcode) {
     // STI - Set interrupt flag
     case 0x08:
       Flags = Flags | FLAG_I;
+      break;
+
+    // INC - Increment memory (abs)
+    case 0xA0:
+      inc_memory(1);
+      break;
+
+    // INC - Increment memory (abs X)
+    case 0xB0:
+      inc_memory(2);
+      break;
+
+    // INC - Increment memory (abs Y)
+    case 0xC0:
+      inc_memory(3);
       break;
 
     // INCA - Increment accumulator
