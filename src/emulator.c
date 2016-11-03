@@ -1175,7 +1175,32 @@ void Group_1(BYTE opcode) {
 
     // CNE - Call on not zero
     case 0x24:
-      jump_subroutine(Flags & FLAG_C == 0);
+      jump_subroutine(Flags & FLAG_Z == 0);
+      break;
+
+    // CEQ - Call on result equal to zero
+    case 0x25:
+      jump_subroutine(Flags & FLAG_Z != 0);
+      break;
+
+    // CMI - Call on negative result
+    case 0x26:
+      jump_subroutine(Flags & FLAG_N != 0);
+      break;
+
+    // CPL - Call on positive result
+    case 0x27:
+      jump_subroutine(Flags & FLAG_N == 0);
+      break;
+
+    // CHI - Call on result same or lower
+    case 0x28:
+      jump_subroutine(Flags & FLAG_Z != 0 || Flags & FLAG_C != 0);
+      break;
+
+    // CLE - Call on result higher
+    case 0x29:
+      jump(Flags & FLAG_Z == 0 || Flags & FLAG_C == 0);
       break;
   }
 }
