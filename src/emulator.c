@@ -678,9 +678,19 @@ void jump(bool condition) {
   }
 }
 
+void jump_subroutine(bool condition) {
+  WORD address = fetch_address(1);
+  if (condition) {
+    if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
+      Memory[StackPointer--] = (BYTE) ProgramCounter;
+      Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
+    }
+    ProgramCounter = address;
+  }
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
-  WORD address;
 
   switch (opcode) {
     // LDAA
@@ -1155,38 +1165,17 @@ void Group_1(BYTE opcode) {
 
     // CCC - Call on carry clear
     case 0x22:
-      address = fetch_address(1);
-      if ((Flags & FLAG_C) == 0) {
-        if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
-          Memory[StackPointer--] = (BYTE) ProgramCounter;
-          Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
-        }
-        ProgramCounter = address;
-      }
+      jump_subroutine(Flags & FLAG_C == 0);
       break;
 
     // CCS - Call on carry set
     case 0x23:
-      address = fetch_address(1);
-      if ((Flags & FLAG_C) != 0) {
-        if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
-          Memory[StackPointer--] = (BYTE) ProgramCounter;
-          Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
-        }
-        ProgramCounter = address;
-      }
+      jump_subroutine(Flags & FLAG_C != 0);
       break;
 
     // CNE - Call on not zero
     case 0x24:
-      address = fetch_address(1);
-      if ((Flags & FLAG_C) == 0) {
-        if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
-          Memory[StackPointer--] = (BYTE) ProgramCounter;
-          Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
-        }
-        ProgramCounter = address;
-      }
+      jump_subroutine(Flags & FLAG_C == 0);
       break;
   }
 }
