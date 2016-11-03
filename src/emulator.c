@@ -689,6 +689,17 @@ void jump_subroutine(bool condition) {
   }
 }
 
+void sbi_accumulator(int accumulator) {
+  WORD data = ((WORD) fetch() - (WORD) Registers[accumulator]);
+
+  if (Flags & FLAG_C != 0) {
+    data--;
+  }
+
+  set_flags_znc(data);
+  Registers[accumulator] = (BYTE) data;
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1201,6 +1212,16 @@ void Group_1(BYTE opcode) {
     // CLE - Call on result higher
     case 0x29:
       jump(Flags & FLAG_Z == 0 || Flags & FLAG_C == 0);
+      break;
+
+    // SBIA - Data subtracted to accumulator with carry
+    case 0x93:
+      sbi_accumulator(REGISTER_A);
+      break;
+
+    // SBIB - Data subtracted to accumulator with carry
+    case 0x94:
+      sbi_accumulator(REGISTER_B);
       break;
   }
 }
