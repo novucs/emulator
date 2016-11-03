@@ -715,6 +715,15 @@ void inc_memory(int id) {
   }
 }
 
+void dec_memory(int id) {
+  WORD address = fetch_address(id);
+  if (address >= 0 && address < MEMORY_SIZE) {
+    Memory[address]--;
+    set_flag_n(Memory[address]);
+    set_flag_z(Memory[address]);
+  }
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1093,6 +1102,21 @@ void Group_1(BYTE opcode) {
       Registers[REGISTER_B]++;
       set_flag_z(Registers[REGISTER_B]);
       set_flag_n(Registers[REGISTER_B]);
+      break;
+
+    // DEC - Decrement memory (abs)
+    case 0xA1:
+      dec_memory(1);
+      break;
+
+    // DEC - Decrement memory (abs X)
+    case 0xB1:
+      dec_memory(2);
+      break;
+
+    // DEC - Decrement memory (abs Y)
+    case 0xC1:
+      dec_memory(3);
       break;
 
     // DECA - Decrement accumulator
