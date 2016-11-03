@@ -1,6 +1,4 @@
 -- Incomplete --
-CPIA
-CPIB
 ORIB
 INC
 DEC

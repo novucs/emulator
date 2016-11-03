@@ -1223,6 +1223,16 @@ void Group_1(BYTE opcode) {
     case 0x94:
       sbi_accumulator(REGISTER_B);
       break;
+
+    // CPIA - Data compared to accumulator
+    case 0x95:
+    	set_flags_znc(fetch() - Registers[REGISTER_A]);
+      break;
+
+    // CPIB - Data compared to accumulator
+    case 0x96:
+    	set_flags_znc(fetch() - Registers[REGISTER_B]);
+      break;
   }
 }
 
