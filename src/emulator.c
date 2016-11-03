@@ -665,14 +665,22 @@ void sal_accumulator(int accumulator) {
   set_flags_znc(answer);
 }
 
-lsr_accumulator(int accumulator) {
+void lsr_accumulator(int accumulator) {
   BYTE answer = Registers[accumulator] >> 1;
   Registers[accumulator] = (BYTE) answer;
   set_flags_znc(answer);
 }
 
+void jump(bool condition) {
+  WORD address = fetch_address(1);
+  if (condition) {
+    ProgramCounter = address;
+  }
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
+  WORD address;
 
   switch (opcode) {
     // LDAA
@@ -1102,6 +1110,82 @@ void Group_1(BYTE opcode) {
     case 0x4C:
       if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 2) {
         ProgramCounter = join_address(Memory[++StackPointer], Memory[++StackPointer]);
+      }
+      break;
+
+    // JCC - Jump on carry clear
+    case 0x11:
+      jump(Flags & FLAG_C == 0);
+      break;
+
+    // JCS - Jump on carry set
+    case 0x12:
+      jump(Flags & FLAG_C != 0);
+      break;
+
+    // JNE - Jump on result not zero
+    case 0x13:
+      jump(Flags & FLAG_Z == 0);
+      break;
+
+    // JEQ - Jump on result equal to zero
+    case 0x14:
+      jump(Flags & FLAG_Z != 0);
+      break;
+
+    // JMI - Jump on negative result
+    case 0x15:
+      jump(Flags & FLAG_N != 0);
+      break;
+
+    // JPL - Jump on positive result
+    case 0x16:
+      jump(Flags & FLAG_N == 0);
+      break;
+
+    // JHI - Jump on result same or lower
+    case 0x17:
+      jump(Flags & FLAG_Z != 0 || Flags & FLAG_C != 0);
+      break;
+
+    // JLE - Jump on result higher
+    case 0x18:
+      jump(Flags & FLAG_Z == 0 || Flags & FLAG_C == 0);
+      break;
+
+    // CCC - Call on carry clear
+    case 0x22:
+      address = fetch_address(1);
+      if ((Flags & FLAG_C) == 0) {
+        if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
+          Memory[StackPointer--] = (BYTE) ProgramCounter;
+          Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
+        }
+        ProgramCounter = address;
+      }
+      break;
+
+    // CCS - Call on carry set
+    case 0x23:
+      address = fetch_address(1);
+      if ((Flags & FLAG_C) != 0) {
+        if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
+          Memory[StackPointer--] = (BYTE) ProgramCounter;
+          Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
+        }
+        ProgramCounter = address;
+      }
+      break;
+
+    // CNE - Call on not zero
+    case 0x24:
+      address = fetch_address(1);
+      if ((Flags & FLAG_C) == 0) {
+        if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
+          Memory[StackPointer--] = (BYTE) ProgramCounter;
+          Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
+        }
+        ProgramCounter = address;
       }
       break;
   }
