@@ -753,6 +753,27 @@ void rrc_memory(int id) {
   set_flag_z(Memory[address]);
 }
 
+void rrc_accumulator(int accumulator) {
+  // Rotate accumulator to the right.
+  BYTE data = Registers[accumulator] >> 1;
+
+	if (Flags & FLAG_C != 0) {
+    data += 128;
+  }
+
+  // Set the carry flag.
+	if (Registers[accumulator] % 2 == 0) {
+		Flags = Flags & (0xFF - FLAG_C);
+	} else {
+		Flags = Flags | FLAG_C;
+	}
+
+  // Update accumulator and set negative and zero flags.
+  Registers[accumulator] = data;
+  set_flag_n(Registers[accumulator]);
+  set_flag_z(Registers[accumulator]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1175,6 +1196,16 @@ void Group_1(BYTE opcode) {
     // RRC - Rotate right through carry memory (abs Y)
     case 0xC2:
       rrc_memory(3);
+      break;
+
+    // RRCA - Rotate right through carry accumulator
+    case 0xD2:
+      rrc_accumulator(REGISTER_A);
+      break;
+
+    // RRCB - Rotate right through carry accumulator
+    case 0xE2:
+      rrc_accumulator(REGISTER_B);
       break;
 
     // SALA - Arithmetic shift left accumulator
