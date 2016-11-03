@@ -654,6 +654,28 @@ void _bit(int accumulator, int reg) {
   set_flag_n(answer);
 }
 
+void sal_memory(int id) {
+  // Get the address.
+  WORD address = fetch_address(id);
+
+  // Do nothing if address is out of range.
+	if (address < 0 || address >= MEMORY_SIZE) {
+    return;
+  }
+
+  // Set the carry flag.
+	if (Memory[address] < 128) {
+		Flags = Flags & (0xFF - FLAG_C);
+	} else {
+		Flags = Flags | FLAG_C;
+	}
+
+  // Update memory and set negative and zero flags.
+  Memory[address] <<= 1;
+  set_flag_n(Memory[address]);
+  set_flag_z(Memory[address]);
+}
+
 /**
  * Arithmetic shift left accumulator.
  *
@@ -1281,6 +1303,21 @@ void Group_1(BYTE opcode) {
     // RLCB - Rotate left through carry accumulator
     case 0xE3:
       rlc_accumulator(REGISTER_B);
+      break;
+
+    // SAL - Arithmetic shift left memory (abs)
+    case 0xA4:
+      sal_memory(1);
+      break;
+
+    // SAL - Arithmetic shift left memory (abs X)
+    case 0xB4:
+      sal_memory(2);
+      break;
+
+    // SAL - Arithmetic shift left memory (abs Y)
+    case 0xC4:
+      sal_memory(3);
       break;
 
     // SALA - Arithmetic shift left accumulator
