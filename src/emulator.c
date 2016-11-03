@@ -700,6 +700,12 @@ void sbi_accumulator(int accumulator) {
   Registers[accumulator] = (BYTE) data;
 }
 
+void ori_accumulator(int accumulator) {
+  BYTE data = Registers[accumulator] |= fetch();
+  set_flag_n(data);
+  set_flag_z(data);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1232,6 +1238,16 @@ void Group_1(BYTE opcode) {
     // CPIB - Data compared to accumulator
     case 0x96:
     	set_flags_znc(fetch() - Registers[REGISTER_B]);
+      break;
+
+    // ORIA - Data bitwise inclusive or with accumulator
+    case 0x97:
+      ori_accumulator(REGISTER_A);
+      break;
+
+    // ORIB - Data bitwise inclusive or with accumulator
+    case 0x98:
+      ori_accumulator(REGISTER_B);
       break;
   }
 }
