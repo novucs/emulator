@@ -724,6 +724,35 @@ void dec_memory(int id) {
   }
 }
 
+void rrc_memory(int id) {
+  // Get the address.
+  WORD address = fetch_address(id);
+
+  // Do nothing if address fetched is out of bounds.
+	if (address < 0 || address >= MEMORY_SIZE) {
+    return;
+  }
+
+  // Rotate memory to the right.
+  BYTE data = Memory[address] >> 1;
+
+	if (Flags & FLAG_C != 0) {
+    data += 128;
+  }
+
+  // Set the carry flag.
+	if (Memory[address] % 2 == 0) {
+		Flags = Flags & (0xFF - FLAG_C);
+	} else {
+		Flags = Flags | FLAG_C;
+	}
+
+  // Update memory and set negative and zero flags.
+  Memory[address] = data;
+  set_flag_n(Memory[address]);
+  set_flag_z(Memory[address]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1131,6 +1160,21 @@ void Group_1(BYTE opcode) {
       Registers[REGISTER_B]--;
       set_flag_z(Registers[REGISTER_B]);
       set_flag_n(Registers[REGISTER_B]);
+      break;
+
+    // RRC - Rotate right through carry memory (abs)
+    case 0xA2:
+      rrc_memory(1);
+      break;
+
+    // RRC - Rotate right through carry memory (abs X)
+    case 0xB2:
+      rrc_memory(2);
+      break;
+
+    // RRC - Rotate right through carry memory (abs Y)
+    case 0xC2:
+      rrc_memory(3);
       break;
 
     // SALA - Arithmetic shift left accumulator

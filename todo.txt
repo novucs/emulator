@@ -1,5 +1,4 @@
 -- Incomplete --
-RRC
 RRCA
 RRCB
 RLC
