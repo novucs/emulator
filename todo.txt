@@ -1,6 +1,4 @@
 -- Incomplete --
-RLCA
-RLCB
 SAL
 SAR
 SARA
