@@ -1,8 +1,4 @@
 -- Incomplete --
-COM
-COMA
-COMB
-ROL
 ROLA
 ROLB
 RR

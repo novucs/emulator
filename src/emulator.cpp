@@ -925,6 +925,23 @@ void com_accumulator(int accumulator) {
   set_flags_znc(Registers[accumulator]);
 }
 
+void rol_memory(int id) {
+  WORD address = fetch_address(id);
+  if (address < 0 || address >= MEMORY_SIZE) {
+    return;
+  }
+
+  BYTE data = Memory[address] << 1;
+
+  if (Memory[address] >= 128) {
+    data++;
+  }
+
+  Memory[address] = data;
+  set_flag_n(Memory[address]);
+  set_flag_z(Memory[address]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1482,6 +1499,21 @@ void Group_1(BYTE opcode) {
     // COMB - Negate accumulator
     case 0xE7:
       com_accumulator(REGISTER_B);
+      break;
+
+    // ROL - Rotate memory left without carry (abs)
+    case 0xA8:
+      rol_memory(1);
+      break;
+
+    // ROL - Rotate memory left without carry (abs X)
+    case 0xB8:
+      rol_memory(2);
+      break;
+
+    // ROL - Rotate memory left without carry (abs Y)
+    case 0xC8:
+      rol_memory(3);
       break;
 
     // PUSH - Pushes register onto the stack
