@@ -30,3 +30,6 @@ CMP - *-H *-L
 SBC - *-H
 ADC - *-H
 JSR - Less marks when implemented
+COM - No marks
+COMA - No marks
+COMB - No marks

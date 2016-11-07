@@ -910,6 +910,21 @@ void lsr_accumulator(int accumulator) {
   set_flag_z(Registers[accumulator]);
 }
 
+void com_memory(int id) {
+  WORD address = fetch_address(id);
+  if (address < 0 || address >= MEMORY_SIZE) {
+    return;
+  }
+
+  Memory[address] = ~(Memory[address]);
+  set_flags_znc(Memory[address]);
+}
+
+void com_accumulator(int accumulator) {
+  Registers[accumulator] = ~(Registers[accumulator]);
+  set_flags_znc(Registers[accumulator]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1442,6 +1457,31 @@ void Group_1(BYTE opcode) {
     // LSRB - Shift right accumulator
     case 0xE6:
       lsr_accumulator(REGISTER_B);
+      break;
+
+    // COM - Negate memory (abs)
+    case 0xA7:
+      com_memory(1);
+      break;
+
+    // COM - Negate memory (abs X)
+    case 0xB7:
+      com_memory(2);
+      break;
+
+    // COM - Negate memory (abs Y)
+    case 0xC7:
+      com_memory(3);
+      break;
+
+    // COMA - Negate accumulator
+    case 0xD7:
+      com_accumulator(REGISTER_A);
+      break;
+
+    // COMB - Negate accumulator
+    case 0xE7:
+      com_accumulator(REGISTER_B);
       break;
 
     // PUSH - Pushes register onto the stack
