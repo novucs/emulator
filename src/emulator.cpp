@@ -1633,6 +1633,10 @@ void Group_1(BYTE opcode) {
       xchg(REGISTER_A, REGISTER_L);
       break;
 
+    // NOP - No operation
+    case 0x2C:
+      break;
+
     // PUSH - Pushes register onto the stack
     case 0xBE:
       if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
