@@ -954,6 +954,23 @@ void rol_accumulator(int accumulator) {
   set_flag_z(Registers[accumulator]);
 }
 
+void rr_memory(int id) {
+  WORD address = fetch_address(id);
+  if (address < 0 || address >= MEMORY_SIZE) {
+    return;
+  }
+
+  BYTE data = Memory[address] >> 1;
+
+  if (Memory[address] % 2 != 0) {
+    data += 128;
+  }
+
+  Memory[address] = data;
+  set_flag_n(Memory[address]);
+  set_flag_z(Memory[address]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1536,6 +1553,21 @@ void Group_1(BYTE opcode) {
     // ROLB - Rotate accumulator left without carry
     case 0xE8:
       rol_accumulator(REGISTER_B);
+      break;
+
+    // RR - Rotate memory right without carry (abs)
+    case 0xA9:
+      rr_memory(1);
+      break;
+
+    // RR - Rotate memory right without carry (abs X)
+    case 0xB9:
+      rr_memory(2);
+      break;
+
+    // RR - Rotate memory right without carry (abs Y)
+    case 0xC9:
+      rr_memory(3);
       break;
 
     // PUSH - Pushes register onto the stack

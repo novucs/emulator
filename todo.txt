@@ -1,5 +1,4 @@
 -- Incomplete --
-RR
 RRA
 RRB
 DECX
