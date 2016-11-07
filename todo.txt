@@ -1,6 +1,4 @@
 -- Incomplete --
-RRA
-RRB
 DECX
 INCX
 DEY

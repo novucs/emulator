@@ -971,6 +971,18 @@ void rr_memory(int id) {
   set_flag_z(Memory[address]);
 }
 
+void rr_accumulator(int accumulator) {
+  BYTE data = Registers[accumulator] >> 1;
+
+  if (Registers[accumulator] % 2 != 0) {
+    data += 128;
+  }
+
+  Registers[accumulator] = data;
+  set_flag_n(Registers[accumulator]);
+  set_flag_z(Registers[accumulator]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1568,6 +1580,16 @@ void Group_1(BYTE opcode) {
     // RR - Rotate memory right without carry (abs Y)
     case 0xC9:
       rr_memory(3);
+      break;
+
+    // RRA - Rotate accumulator right without carry
+    case 0xD9:
+      rr_accumulator(REGISTER_A);
+      break;
+
+    // RRB - Rotate accumulator right without carry
+    case 0xE9:
+      rr_accumulator(REGISTER_B);
       break;
 
     // PUSH - Pushes register onto the stack
