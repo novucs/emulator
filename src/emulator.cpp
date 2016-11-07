@@ -1652,6 +1652,15 @@ void Group_1(BYTE opcode) {
   		Memory[StackPointer--] = Registers[REGISTER_H];
   		break;
 
+    // RTI - Return from software interrupt
+    case 0x5D:
+  		Registers[REGISTER_L] = Memory[++StackPointer];
+  		Registers[REGISTER_H] = Memory[++StackPointer];
+  		Registers[Flags] = Memory[++StackPointer];
+  		Registers[REGISTER_B] = Memory[++StackPointer];
+  		Registers[REGISTER_A] = Memory[++StackPointer];
+  		break;
+
     // PUSH - Pushes register onto the stack
     case 0xBE:
       if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {

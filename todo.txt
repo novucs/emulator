@@ -1,5 +1,4 @@
 -- Incomplete --
-RTI
 
 -- Needs Revision --
 BIT - *-H
@@ -24,3 +23,4 @@ XCHG - No marks
 NOP - No marks
 HLT - No marks
 SWI - No marks
+RTI - No marks
