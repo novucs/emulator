@@ -1013,26 +1013,6 @@ void Group_1(BYTE opcode) {
       load_register(id, REGISTER_B);
       break;
 
-    // LDX
-    case 0x0E:
-    case 0x1E:
-    case 0x2E:
-    case 0x3E:
-    case 0x4E:
-    case 0x5E:
-      load_register(id, REGISTER_X);
-      break;
-
-    // LDY
-    case 0x0F:
-    case 0x1F:
-    case 0x2F:
-    case 0x3F:
-    case 0x4F:
-    case 0x5F:
-      load_register(id, REGISTER_Y);
-      break;
-
     // STORA
     case 0xBA:
     case 0xCA:
@@ -1049,95 +1029,6 @@ void Group_1(BYTE opcode) {
     case 0xEB:
     case 0xFB:
       store_register(id, REGISTER_B);
-      break;
-
-    // STOX
-    case 0xBC:
-    case 0xCC:
-    case 0xDC:
-    case 0xEC:
-    case 0xFC:
-      store_register(id, REGISTER_X);
-      break;
-
-    // STOY
-    case 0xBD:
-    case 0xCD:
-    case 0xDD:
-    case 0xED:
-    case 0xFD:
-      store_register(id, REGISTER_Y);
-      break;
-
-    // MVI - Loads memory into register
-    case 0x1C:
-      Registers[REGISTER_L] = fetch();
-      break;
-
-    // LODS
-    case 0x20:
-    case 0x30:
-    case 0x40:
-    case 0x50:
-    case 0x60:
-    case 0x70:
-      load_stackpointer(id);
-      break;
-
-    // STOS
-    case 0x6A:
-    case 0x7A:
-    case 0x8A:
-    case 0x9A:
-    case 0xAA:
-      store_stackpointer(id);
-      break;
-
-    // LX - Loads memory into register pair
-    case 0x0C:
-    case 0x0D:
-      Registers[REGISTER_H] = fetch();
-      Registers[REGISTER_L] = fetch();
-      break;
-
-    // CAY - Transfers accumulator to register Y
-    case 0xF0:
-      Registers[REGISTER_Y] = Registers[REGISTER_A];
-      set_flag_n(Registers[REGISTER_Y]);
-      break;
-
-    // MYA - Transfers register Y to accumulator
-    case 0xF1:
-      Registers[REGISTER_A] = Registers[REGISTER_Y];
-      break;
-
-    // CSA - Transfers status register to accumulator
-    case 0xF2:
-      Registers[REGISTER_A] = Flags;
-      break;
-
-    // ABA - Adds accumulator B into accumulator A
-    case 0xF3:
-      Registers[REGISTER_A] += Registers[REGISTER_B];
-      set_flags_znc(Registers[REGISTER_A]);
-      break;
-
-    // SBA - Subtracts accumulator B from accumulator A
-    case 0xF4:
-      Registers[REGISTER_A] -= Registers[REGISTER_B];
-      set_flags_znc(Registers[REGISTER_A]);
-      break;
-
-    // AAB - Adds accumulator A into accumulator B
-    case 0xF5:
-      Registers[REGISTER_B] += Registers[REGISTER_A];
-      set_flags_znc(Registers[REGISTER_B]);
-      break;
-
-    // SAB - Subtracts accumulator A from accumulator B
-    case 0xF6:
-      Registers[REGISTER_B] -= Registers[REGISTER_A];
-      set_flags_znc(Registers[REGISTER_B]);
       break;
 
     // ADC - Register added to accumulator with carry
@@ -1180,26 +1071,6 @@ void Group_1(BYTE opcode) {
       sbc(REGISTER_B, REGISTER_M);
       break;
 
-    // CMP - Register compared to accumulator
-    case 0x35:
-      cmp(REGISTER_A, REGISTER_L);
-      break;
-    case 0x45:
-      cmp(REGISTER_A, REGISTER_H);
-      break;
-    case 0x55:
-      cmp(REGISTER_A, REGISTER_M);
-      break;
-    case 0x65:
-      cmp(REGISTER_B, REGISTER_L);
-      break;
-    case 0x75:
-      cmp(REGISTER_B, REGISTER_H);
-      break;
-    case 0x85:
-      cmp(REGISTER_B, REGISTER_M);
-      break;
-
     // ADD - Register added to accumulator
     case 0x33:
       add(REGISTER_A, REGISTER_L);
@@ -1238,6 +1109,26 @@ void Group_1(BYTE opcode) {
       break;
     case 0x84:
       sub(REGISTER_B, REGISTER_M);
+      break;
+
+    // CMP - Register compared to accumulator
+    case 0x35:
+      cmp(REGISTER_A, REGISTER_L);
+      break;
+    case 0x45:
+      cmp(REGISTER_A, REGISTER_H);
+      break;
+    case 0x55:
+      cmp(REGISTER_A, REGISTER_M);
+      break;
+    case 0x65:
+      cmp(REGISTER_B, REGISTER_L);
+      break;
+    case 0x75:
+      cmp(REGISTER_B, REGISTER_H);
+      break;
+    case 0x85:
+      cmp(REGISTER_B, REGISTER_M);
       break;
 
     // OR - Register bitwise inclusive or with accumulator
@@ -1280,7 +1171,7 @@ void Group_1(BYTE opcode) {
       _and(REGISTER_B, REGISTER_M);
       break;
 
-    // OR - Register bitwise exclusive or with accumulator
+    // XOR - Register bitwise exclusive or with accumulator
     case 0x38:
       _xor(REGISTER_A, REGISTER_L);
       break;
@@ -1320,24 +1211,34 @@ void Group_1(BYTE opcode) {
       _bit(REGISTER_B, REGISTER_M);
       break;
 
-    // CLC - Clear carry flag
-    case 0x05:
-      Flags = Flags & (0xFF - FLAG_C);
+    // SBIA - Data subtracted to accumulator with carry
+    case 0x93:
+      sbi_accumulator(REGISTER_A);
       break;
 
-    // STC - Set carry flag
-    case 0x06:
-      Flags = Flags | FLAG_C;
+    // SBIB - Data subtracted to accumulator with carry
+    case 0x94:
+      sbi_accumulator(REGISTER_B);
       break;
 
-    // CLI - Clear interrupt flag
-    case 0x07:
-      Flags = Flags & (0xFF - FLAG_I);
+    // CPIA - Data compared to accumulator
+    case 0x95:
+    	set_flags_znc(fetch() - Registers[REGISTER_A]);
       break;
 
-    // STI - Set interrupt flag
-    case 0x08:
-      Flags = Flags | FLAG_I;
+    // CPIB - Data compared to accumulator
+    case 0x96:
+    	set_flags_znc(fetch() - Registers[REGISTER_B]);
+      break;
+
+    // ORIA - Data bitwise inclusive or with accumulator
+    case 0x97:
+      ori_accumulator(REGISTER_A);
+      break;
+
+    // ORIB - Data bitwise inclusive or with accumulator
+    case 0x98:
+      ori_accumulator(REGISTER_B);
       break;
 
     // INC - Increment memory (abs)
@@ -1598,6 +1499,25 @@ void Group_1(BYTE opcode) {
       rr_accumulator(REGISTER_B);
       break;
 
+    // LDX
+    case 0x0E:
+    case 0x1E:
+    case 0x2E:
+    case 0x3E:
+    case 0x4E:
+    case 0x5E:
+      load_register(id, REGISTER_X);
+      break;
+
+    // STOX
+    case 0xBC:
+    case 0xCC:
+    case 0xDC:
+    case 0xEC:
+    case 0xFC:
+      store_register(id, REGISTER_X);
+      break;
+
     // DECX - Decrements register X
     case 0x01:
       set_flag_z(--Index_Registers[REGISTER_X]);
@@ -1606,6 +1526,36 @@ void Group_1(BYTE opcode) {
     // INCX - Increments register X
     case 0x02:
       set_flag_z(++Index_Registers[REGISTER_X]);
+      break;
+
+    // LDY
+    case 0x0F:
+    case 0x1F:
+    case 0x2F:
+    case 0x3F:
+    case 0x4F:
+    case 0x5F:
+      load_register(id, REGISTER_Y);
+      break;
+
+    // STOY
+    case 0xBD:
+    case 0xCD:
+    case 0xDD:
+    case 0xED:
+    case 0xFD:
+      store_register(id, REGISTER_Y);
+      break;
+
+    // CAY - Transfers accumulator to register Y
+    case 0xF0:
+      Registers[REGISTER_Y] = Registers[REGISTER_A];
+      set_flag_n(Registers[REGISTER_Y]);
+      break;
+
+    // MYA - Transfers register Y to accumulator
+    case 0xF1:
+      Registers[REGISTER_A] = Registers[REGISTER_Y];
       break;
 
     // DECY - Decrements register Y
@@ -1618,48 +1568,29 @@ void Group_1(BYTE opcode) {
       set_flag_z(++Index_Registers[REGISTER_Y]);
       break;
 
-    // ADCP - Adds register pair into accumulator pair
-    case 0xF7:
-      adc(REGISTER_A, REGISTER_L);
+    // LODS
+    case 0x20:
+    case 0x30:
+    case 0x40:
+    case 0x50:
+    case 0x60:
+    case 0x70:
+      load_stackpointer(id);
       break;
 
-    // SBCP - Subtracts register pair into accumulator pair
-    case 0xF8:
-      sbc(REGISTER_A, REGISTER_L);
+    // STOS
+    case 0x6A:
+    case 0x7A:
+    case 0x8A:
+    case 0x9A:
+    case 0xAA:
+      store_stackpointer(id);
       break;
 
-    // XCHG - Swaps the registers contents
-    case 0x92:
-      xchg(REGISTER_A, REGISTER_L);
+    // CSA - Transfers status register to accumulator
+    case 0xF2:
+      Registers[REGISTER_A] = Flags;
       break;
-
-    // NOP - No operation
-    case 0x2C:
-      break;
-
-    // HLT - Wait for interrupt
-    case 0x2D:
-      halt = true;
-      break;
-
-  	// SWI - Software interrupt
-  	case 0x5C:
-  		Flags |= FLAG_I;
-  		Memory[StackPointer--] = Registers[REGISTER_A];
-  		Memory[StackPointer--] = Registers[REGISTER_B];
-  		Memory[StackPointer--] = Registers[Flags];
-  		Memory[StackPointer--] = Registers[REGISTER_L];
-  		Memory[StackPointer--] = Registers[REGISTER_H];
-  		break;
-
-    // RTI - Return from software interrupt
-    case 0x5D:
-  		Registers[REGISTER_L] = Memory[++StackPointer];
-  		Registers[REGISTER_H] = Memory[++StackPointer];
-  		Registers[Flags] = Memory[++StackPointer];
-  		Registers[REGISTER_B] = Memory[++StackPointer];
-  		Registers[REGISTER_A] = Memory[++StackPointer];
-  		break;
 
     // PUSH - Pushes register onto the stack
     case 0xBE:
@@ -1695,9 +1626,60 @@ void Group_1(BYTE opcode) {
       Registers[REGISTER_H] = Memory[++StackPointer];
       break;
 
+    // LX - Loads memory into register pair
+    case 0x0C:
+    case 0x0D:
+      Registers[REGISTER_H] = fetch();
+      Registers[REGISTER_L] = fetch();
+      break;
+
     // JMP - Loads memory into program counter
     case 0x10:
       ProgramCounter = fetch_address(1);
+      break;
+
+    // ABA - Adds accumulator B into accumulator A
+    case 0xF3:
+      Registers[REGISTER_A] += Registers[REGISTER_B];
+      set_flags_znc(Registers[REGISTER_A]);
+      break;
+
+    // SBA - Subtracts accumulator B from accumulator A
+    case 0xF4:
+      Registers[REGISTER_A] -= Registers[REGISTER_B];
+      set_flags_znc(Registers[REGISTER_A]);
+      break;
+
+    // AAB - Adds accumulator A into accumulator B
+    case 0xF5:
+      Registers[REGISTER_B] += Registers[REGISTER_A];
+      set_flags_znc(Registers[REGISTER_B]);
+      break;
+
+    // SAB - Subtracts accumulator A from accumulator B
+    case 0xF6:
+      Registers[REGISTER_B] -= Registers[REGISTER_A];
+      set_flags_znc(Registers[REGISTER_B]);
+      break;
+
+    // MVI - Loads memory into register
+    case 0x1C:
+      Registers[REGISTER_L] = fetch();
+      break;
+
+    // ADCP - Adds register pair into accumulator pair
+    case 0xF7:
+      adc(REGISTER_A, REGISTER_L);
+      break;
+
+    // SBCP - Subtracts register pair into accumulator pair
+    case 0xF8:
+      sbc(REGISTER_A, REGISTER_L);
+      break;
+
+    // XCHG - Swaps the registers contents
+    case 0x92:
+      xchg(REGISTER_A, REGISTER_L);
       break;
 
     // JSR - Jump subroutine
@@ -1796,35 +1778,53 @@ void Group_1(BYTE opcode) {
       jump(Flags & FLAG_Z == 0 || Flags & FLAG_C == 0);
       break;
 
-    // SBIA - Data subtracted to accumulator with carry
-    case 0x93:
-      sbi_accumulator(REGISTER_A);
+    // CLC - Clear carry flag
+    case 0x05:
+      Flags = Flags & (0xFF - FLAG_C);
       break;
 
-    // SBIB - Data subtracted to accumulator with carry
-    case 0x94:
-      sbi_accumulator(REGISTER_B);
+    // STC - Set carry flag
+    case 0x06:
+      Flags = Flags | FLAG_C;
       break;
 
-    // CPIA - Data compared to accumulator
-    case 0x95:
-    	set_flags_znc(fetch() - Registers[REGISTER_A]);
+    // CLI - Clear interrupt flag
+    case 0x07:
+      Flags = Flags & (0xFF - FLAG_I);
       break;
 
-    // CPIB - Data compared to accumulator
-    case 0x96:
-    	set_flags_znc(fetch() - Registers[REGISTER_B]);
+    // STI - Set interrupt flag
+    case 0x08:
+      Flags = Flags | FLAG_I;
       break;
 
-    // ORIA - Data bitwise inclusive or with accumulator
-    case 0x97:
-      ori_accumulator(REGISTER_A);
+    // NOP - No operation
+    case 0x2C:
       break;
 
-    // ORIB - Data bitwise inclusive or with accumulator
-    case 0x98:
-      ori_accumulator(REGISTER_B);
+    // HLT - Wait for interrupt
+    case 0x2D:
+      halt = true;
       break;
+
+  	// SWI - Software interrupt
+  	case 0x5C:
+  		Flags |= FLAG_I;
+  		Memory[StackPointer--] = Registers[REGISTER_A];
+  		Memory[StackPointer--] = Registers[REGISTER_B];
+  		Memory[StackPointer--] = Registers[Flags];
+  		Memory[StackPointer--] = Registers[REGISTER_L];
+  		Memory[StackPointer--] = Registers[REGISTER_H];
+  		break;
+
+    // RTI - Return from software interrupt
+    case 0x5D:
+  		Registers[REGISTER_L] = Memory[++StackPointer];
+  		Registers[REGISTER_H] = Memory[++StackPointer];
+  		Registers[Flags] = Memory[++StackPointer];
+  		Registers[REGISTER_B] = Memory[++StackPointer];
+  		Registers[REGISTER_A] = Memory[++StackPointer];
+  		break;
   }
 }
 
@@ -1894,52 +1894,52 @@ void emulate() {
   memory_in_range = true;
   sanity = 0;
 
-  printf("                    A  B  L  H  X  Y  SP\n");
+  // printf("                    A  B  L  H  X  Y  SP\n");
 
   while ((!halt) && (memory_in_range) && (sanity < 200)) {
-    printf("%04X ", ProgramCounter);                       // Print current address
+    // printf("%04X ", ProgramCounter);                       // Print current address
     opcode = fetch();
     execute(opcode);
 
-    printf("%s  ", opcode_mneumonics[opcode]);              // Print current opcode
-
-    printf("%02X ", Registers[REGISTER_A]);
-    printf("%02X ", Registers[REGISTER_B]);
-    printf("%02X ", Registers[REGISTER_L]);
-    printf("%02X ", Registers[REGISTER_H]);
-    printf("%02X ", Index_Registers[REGISTER_X]);
-    printf("%02X ", Index_Registers[REGISTER_Y]);
-    printf("%04X ", StackPointer);                          // Print Stack Pointer
-
-    if ((Flags & FLAG_I) == FLAG_I) {
-      printf("I=1 ");
-    } else {
-      printf("I=0 ");
-    }
-
-    if ((Flags & FLAG_Z) == FLAG_Z) {
-      printf("Z=1 ");
-    } else {
-      printf("Z=0 ");
-    }
-
-    if ((Flags & FLAG_N) == FLAG_N) {
-      printf("N=1 ");
-    } else {
-      printf("N=0 ");
-    }
-
-    if ((Flags & FLAG_C) == FLAG_C) {
-      printf("C=1 ");
-    } else {
-      printf("C=0 ");
-    }
-
-    printf("\n");              // New line
+    // printf("%s  ", opcode_mneumonics[opcode]);              // Print current opcode
+    //
+    // printf("%02X ", Registers[REGISTER_A]);
+    // printf("%02X ", Registers[REGISTER_B]);
+    // printf("%02X ", Registers[REGISTER_L]);
+    // printf("%02X ", Registers[REGISTER_H]);
+    // printf("%02X ", Index_Registers[REGISTER_X]);
+    // printf("%02X ", Index_Registers[REGISTER_Y]);
+    // printf("%04X ", StackPointer);                          // Print Stack Pointer
+    //
+    // if ((Flags & FLAG_I) == FLAG_I) {
+    //   printf("I=1 ");
+    // } else {
+    //   printf("I=0 ");
+    // }
+    //
+    // if ((Flags & FLAG_Z) == FLAG_Z) {
+    //   printf("Z=1 ");
+    // } else {
+    //   printf("Z=0 ");
+    // }
+    //
+    // if ((Flags & FLAG_N) == FLAG_N) {
+    //   printf("N=1 ");
+    // } else {
+    //   printf("N=0 ");
+    // }
+    //
+    // if ((Flags & FLAG_C) == FLAG_C) {
+    //   printf("C=1 ");
+    // } else {
+    //   printf("C=0 ");
+    // }
+    //
+    // printf("\n");              // New line
     sanity++;
   }
 
-  printf("\n");        // New line
+  // printf("\n");        // New line
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2250,7 +2250,7 @@ void test_and_mark() {
 
     if (recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (SOCKADDR *)&client_addr, &len) != SOCKET_ERROR) {
       // printf("Incoming Data: %s \n", buffer);
-      printf("%d - Incoming Data, %s \n", test++, buffer);
+      // printf("%d - Incoming Data, %s \n", test++, buffer);
 
       //if (strcmp(buffer, "Testing complete") == 1)
       if (sscanf(buffer, "Testing complete %d", &mark) == 1) {
