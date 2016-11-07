@@ -1,5 +1,4 @@
 -- Incomplete --
-SAR
 SARA
 SARB
 LSR

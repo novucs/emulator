@@ -846,6 +846,29 @@ void rlc_accumulator(int accumulator) {
   set_flag_z(Registers[accumulator]);
 }
 
+void sar_memory(int id) {
+  WORD address = fetch_address(id);
+  if (address < 0 || address >= MEMORY_SIZE) {
+    return;
+  }
+
+  if (Memory[address] % 2 == 0) {
+    Flags = Flags & (0xFF - FLAG_C);
+  } else {
+    Flags = Flags | FLAG_C;
+  }
+
+  BYTE data = (Memory[address] >> 1);
+
+  if (Memory[address] > 127) {
+    data += 128;
+  }
+
+  Memory[address] = data;
+  set_flag_n(Memory[address]);
+  set_flag_z(Memory[address]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1328,6 +1351,21 @@ void Group_1(BYTE opcode) {
     // SALB - Arithmetic shift left accumulator
     case 0xE4:
       sal_accumulator(REGISTER_B);
+      break;
+
+    // SAR - Arithmetic shift right memory (abs)
+    case 0xA5:
+      sar_memory(1);
+      break;
+
+    // SAR - Arithmetic shift right memory (abs X)
+    case 0xB5:
+      sar_memory(2);
+      break;
+
+    // SAR - Arithmetic shift right memory (abs Y)
+    case 0xC5:
+      sar_memory(3);
       break;
 
     // LSRA - Shift right accumulator
