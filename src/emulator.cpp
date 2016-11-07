@@ -983,6 +983,12 @@ void rr_accumulator(int accumulator) {
   set_flag_z(Registers[accumulator]);
 }
 
+void xchg(int reg1, int reg2) {
+  BYTE data = Registers[reg1];
+  Registers[reg1] = Registers[reg2];
+  Registers[reg2] = data;
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1620,6 +1626,11 @@ void Group_1(BYTE opcode) {
     // SBCP - Subtracts register pair into accumulator pair
     case 0xF8:
       sbc(REGISTER_A, REGISTER_L);
+      break;
+
+    // XCHG - Swaps the registers contents
+    case 0x92:
+      xchg(REGISTER_A, REGISTER_L);
       break;
 
     // PUSH - Pushes register onto the stack

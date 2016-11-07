@@ -1,5 +1,4 @@
 -- Incomplete --
-XCHG
 NOP
 HLT
 SWI
@@ -24,3 +23,4 @@ DECY - No marks
 INCY - No marks
 ADCP - No marks
 SBCP - No marks
+XCHG - No marks
