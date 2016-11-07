@@ -1642,6 +1642,16 @@ void Group_1(BYTE opcode) {
       halt = true;
       break;
 
+  	// SWI - Software interrupt
+  	case 0x5C:
+  		Flags |= FLAG_I;
+  		Memory[StackPointer--] = Registers[REGISTER_A];
+  		Memory[StackPointer--] = Registers[REGISTER_B];
+  		Memory[StackPointer--] = Registers[Flags];
+  		Memory[StackPointer--] = Registers[REGISTER_L];
+  		Memory[StackPointer--] = Registers[REGISTER_H];
+  		break;
+
     // PUSH - Pushes register onto the stack
     case 0xBE:
       if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
