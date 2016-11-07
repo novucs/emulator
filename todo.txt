@@ -1,5 +1,4 @@
 -- Incomplete --
-HLT
 SWI
 RTI
 
@@ -24,3 +23,4 @@ ADCP - No marks
 SBCP - No marks
 XCHG - No marks
 NOP - No marks
+HLT - No marks

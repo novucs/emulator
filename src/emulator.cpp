@@ -1637,6 +1637,11 @@ void Group_1(BYTE opcode) {
     case 0x2C:
       break;
 
+    // HLT - Wait for interrupt
+    case 0x2D:
+      halt = true;
+      break;
+
     // PUSH - Pushes register onto the stack
     case 0xBE:
       if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
