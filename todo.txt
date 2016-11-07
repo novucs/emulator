@@ -1,6 +1,4 @@
 -- Incomplete --
-ROLA
-ROLB
 RR
 RRA
 RRB

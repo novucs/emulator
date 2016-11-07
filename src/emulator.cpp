@@ -942,6 +942,18 @@ void rol_memory(int id) {
   set_flag_z(Memory[address]);
 }
 
+void rol_accumulator(int accumulator) {
+  BYTE data = Registers[accumulator] << 1;
+
+  if (Registers[accumulator] >= 128) {
+    data++;
+	}
+
+	Registers[accumulator] = data;
+  set_flag_n(Registers[accumulator]);
+  set_flag_z(Registers[accumulator]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1514,6 +1526,16 @@ void Group_1(BYTE opcode) {
     // ROL - Rotate memory left without carry (abs Y)
     case 0xC8:
       rol_memory(3);
+      break;
+
+    // ROLA - Rotate accumulator left without carry
+    case 0xD8:
+      rol_accumulator(REGISTER_A);
+      break;
+
+    // ROLB - Rotate accumulator left without carry
+    case 0xE8:
+      rol_accumulator(REGISTER_B);
       break;
 
     // PUSH - Pushes register onto the stack
