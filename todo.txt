@@ -1,6 +1,4 @@
 -- Incomplete --
-ADCP
-SBCP
 XCHG
 NOP
 HLT
@@ -24,3 +22,5 @@ DECX - No marks
 INCX - No marks
 DECY - No marks
 INCY - No marks
+ADCP - No marks
+SBCP - No marks

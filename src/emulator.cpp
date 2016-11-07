@@ -1612,6 +1612,16 @@ void Group_1(BYTE opcode) {
       set_flag_z(++Index_Registers[REGISTER_Y]);
       break;
 
+    // ADCP - Adds register pair into accumulator pair
+    case 0xF7:
+      adc(REGISTER_A, REGISTER_L);
+      break;
+
+    // SBCP - Subtracts register pair into accumulator pair
+    case 0xF8:
+      sbc(REGISTER_A, REGISTER_L);
+      break;
+
     // PUSH - Pushes register onto the stack
     case 0xBE:
       if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
