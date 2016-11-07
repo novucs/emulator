@@ -858,7 +858,7 @@ void sar_memory(int id) {
     Flags = Flags | FLAG_C;
   }
 
-  BYTE data = (Memory[address] >> 1);
+  BYTE data = Memory[address] >> 1;
 
   if (Memory[address] > 127) {
     data += 128;
@@ -867,6 +867,24 @@ void sar_memory(int id) {
   Memory[address] = data;
   set_flag_n(Memory[address]);
   set_flag_z(Memory[address]);
+}
+
+void sar_accumulator(int accumulator) {
+  if (Registers[accumulator] % 2 == 0) {
+    Flags = Flags & (0xFF - FLAG_C);
+  } else {
+    Flags = Flags | FLAG_C;
+  }
+
+  BYTE data = Registers[accumulator] >> 1;
+
+  if (Registers[accumulator] > 127) {
+    data += 128;
+  }
+
+  Registers[accumulator] = data;
+  set_flag_n(Registers[accumulator]);
+  set_flag_z(Registers[accumulator]);
 }
 
 void Group_1(BYTE opcode) {
@@ -1366,6 +1384,16 @@ void Group_1(BYTE opcode) {
     // SAR - Arithmetic shift right memory (abs Y)
     case 0xC5:
       sar_memory(3);
+      break;
+
+    // SARA - Arithmetic shift right accumulator
+    case 0xD5:
+      sar_accumulator(REGISTER_A);
+      break;
+
+    // SARB - Arithmetic shift right accumulator
+    case 0xE5:
+      sar_accumulator(REGISTER_B);
       break;
 
     // LSRA - Shift right accumulator
