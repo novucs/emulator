@@ -1663,16 +1663,36 @@ void Group_1(BYTE opcode) {
 
     // PUSH - Pushes register onto the stack
     case 0xBE:
-      if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
-        Memory[StackPointer--] = Registers[REGISTER_A];
-      }
+      Memory[StackPointer--] = Registers[REGISTER_A];
+      break;
+    case 0xCE:
+      Memory[StackPointer--] = Registers[REGISTER_B];
+      break;
+    case 0xDE:
+      Memory[StackPointer--] = Registers[Flags];
+      break;
+    case 0xEE:
+      Memory[StackPointer--] = Registers[REGISTER_L];
+      break;
+    case 0xFE:
+      Memory[StackPointer--] = Registers[REGISTER_H];
       break;
 
     // POP - Pop the top of the stack to the register
     case 0xBF:
-      if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
-        Registers[REGISTER_A] = Memory[++StackPointer];
-      }
+      Registers[REGISTER_A] = Memory[++StackPointer];
+      break;
+    case 0xCF:
+      Registers[REGISTER_B] = Memory[++StackPointer];
+      break;
+    case 0xDF:
+      Registers[Flags] = Memory[++StackPointer];
+      break;
+    case 0xEF:
+      Registers[REGISTER_L] = Memory[++StackPointer];
+      break;
+    case 0xFF:
+      Registers[REGISTER_H] = Memory[++StackPointer];
       break;
 
     // JMP - Loads memory into program counter
@@ -1692,7 +1712,7 @@ void Group_1(BYTE opcode) {
     // RET - Return from subroutine
     case 0x4C:
       if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 2) {
-        ProgramCounter = join_address(Memory[++StackPointer], Memory[++StackPointer]);
+        ProgramCounter = join_address(Memory[StackPointer++], Memory[StackPointer++]);
       }
       break;
 
@@ -1874,52 +1894,52 @@ void emulate() {
   memory_in_range = true;
   sanity = 0;
 
-  // printf("                    A  B  L  H  X  Y  SP\n");
+  printf("                    A  B  L  H  X  Y  SP\n");
 
   while ((!halt) && (memory_in_range) && (sanity < 200)) {
-    // printf("%04X ", ProgramCounter);                       // Print current address
+    printf("%04X ", ProgramCounter);                       // Print current address
     opcode = fetch();
     execute(opcode);
 
-    // printf("%s  ", opcode_mneumonics[opcode]);              // Print current opcode
-    //
-    // printf("%02X ", Registers[REGISTER_A]);
-    // printf("%02X ", Registers[REGISTER_B]);
-    // printf("%02X ", Registers[REGISTER_L]);
-    // printf("%02X ", Registers[REGISTER_H]);
-    // printf("%02X ", Index_Registers[REGISTER_X]);
-    // printf("%02X ", Index_Registers[REGISTER_Y]);
-    // printf("%04X ", StackPointer);                          // Print Stack Pointer
-    //
-    // if ((Flags & FLAG_I) == FLAG_I) {
-    //   printf("I=1 ");
-    // } else {
-    //   printf("I=0 ");
-    // }
-    //
-    // if ((Flags & FLAG_Z) == FLAG_Z) {
-    //   printf("Z=1 ");
-    // } else {
-    //   printf("Z=0 ");
-    // }
-    //
-    // if ((Flags & FLAG_N) == FLAG_N) {
-    //   printf("N=1 ");
-    // } else {
-    //   printf("N=0 ");
-    // }
-    //
-    // if ((Flags & FLAG_C) == FLAG_C) {
-    //   printf("C=1 ");
-    // } else {
-    //   printf("C=0 ");
-    // }
+    printf("%s  ", opcode_mneumonics[opcode]);              // Print current opcode
 
-    // printf("\n");              // New line
+    printf("%02X ", Registers[REGISTER_A]);
+    printf("%02X ", Registers[REGISTER_B]);
+    printf("%02X ", Registers[REGISTER_L]);
+    printf("%02X ", Registers[REGISTER_H]);
+    printf("%02X ", Index_Registers[REGISTER_X]);
+    printf("%02X ", Index_Registers[REGISTER_Y]);
+    printf("%04X ", StackPointer);                          // Print Stack Pointer
+
+    if ((Flags & FLAG_I) == FLAG_I) {
+      printf("I=1 ");
+    } else {
+      printf("I=0 ");
+    }
+
+    if ((Flags & FLAG_Z) == FLAG_Z) {
+      printf("Z=1 ");
+    } else {
+      printf("Z=0 ");
+    }
+
+    if ((Flags & FLAG_N) == FLAG_N) {
+      printf("N=1 ");
+    } else {
+      printf("N=0 ");
+    }
+
+    if ((Flags & FLAG_C) == FLAG_C) {
+      printf("C=1 ");
+    } else {
+      printf("C=0 ");
+    }
+
+    printf("\n");              // New line
     sanity++;
   }
 
-  // printf("\n");        // New line
+  printf("\n");        // New line
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2224,11 +2244,13 @@ void test_and_mark() {
   sprintf(buffer, "Test Student %s", STUDENT_NUMBER);
   sendto(sock, buffer, strlen(buffer), 0, (SOCKADDR *)&server_addr, sizeof(SOCKADDR));
 
+  int test = 0;
   while (!testing_complete) {
     memset(buffer, '\0', sizeof(buffer));
 
     if (recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (SOCKADDR *)&client_addr, &len) != SOCKET_ERROR) {
       // printf("Incoming Data: %s \n", buffer);
+      printf("%d - Incoming Data, %s \n", test++, buffer);
 
       //if (strcmp(buffer, "Testing complete") == 1)
       if (sscanf(buffer, "Testing complete %d", &mark) == 1) {
