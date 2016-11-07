@@ -687,12 +687,6 @@ void sal_accumulator(int accumulator) {
   set_flags_znc(answer);
 }
 
-void lsr_accumulator(int accumulator) {
-  BYTE answer = Registers[accumulator] >> 1;
-  Registers[accumulator] = (BYTE) answer;
-  set_flags_znc(answer);
-}
-
 void jump(bool condition) {
   WORD address = fetch_address(1);
   if (condition) {
@@ -899,9 +893,21 @@ void lsr_memory(int id) {
     Flags = Flags | FLAG_C;
   }
 
-  Memory[address] = Memory[address] >> 1;
+  Memory[address] >>= 1;
   set_flag_n(Memory[address]);
   set_flag_z(Memory[address]);
+}
+
+void lsr_accumulator(int accumulator) {
+	if (Registers[accumulator] % 2 == 0) {
+		Flags = Flags & (0xFF - FLAG_C);
+	} else {
+		Flags = Flags | FLAG_C;
+	}
+
+  Registers[accumulator] >>= 1;
+  set_flag_n(Registers[accumulator]);
+  set_flag_z(Registers[accumulator]);
 }
 
 void Group_1(BYTE opcode) {
