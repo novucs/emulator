@@ -887,6 +887,23 @@ void sar_accumulator(int accumulator) {
   set_flag_z(Registers[accumulator]);
 }
 
+void lsr_memory(int id) {
+  WORD address = fetch_address(id);
+  if (address < 0 || address >= MEMORY_SIZE) {
+    return;
+  }
+
+  if (Memory[address] % 2 == 0) {
+    Flags = Flags & (0xFF - FLAG_C);
+  } else {
+    Flags = Flags | FLAG_C;
+  }
+
+  Memory[address] = Memory[address] >> 1;
+  set_flag_n(Memory[address]);
+  set_flag_z(Memory[address]);
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
@@ -1394,6 +1411,21 @@ void Group_1(BYTE opcode) {
     // SARB - Arithmetic shift right accumulator
     case 0xE5:
       sar_accumulator(REGISTER_B);
+      break;
+
+    // LSR - Shift right memory (abs)
+    case 0xA6:
+      lsr_memory(1);
+      break;
+
+    // LSR - Shift right memory (abs X)
+    case 0xB6:
+      lsr_memory(2);
+      break;
+
+    // LSR - Shift right memory (abs Y)
+    case 0xC6:
+      lsr_memory(3);
       break;
 
     // LSRA - Shift right accumulator
