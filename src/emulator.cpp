@@ -1592,6 +1592,26 @@ void Group_1(BYTE opcode) {
       rr_accumulator(REGISTER_B);
       break;
 
+    // DECX - Decrements register X
+    case 0x01:
+      set_flag_z(--Index_Registers[REGISTER_X]);
+      break;
+
+    // INCX - Increments register X
+    case 0x02:
+      set_flag_z(++Index_Registers[REGISTER_X]);
+      break;
+
+    // DECY - Decrements register Y
+    case 0x03:
+      set_flag_z(--Index_Registers[REGISTER_Y]);
+      break;
+
+    // INCY - Increments register Y
+    case 0x04:
+      set_flag_z(++Index_Registers[REGISTER_Y]);
+      break;
+
     // PUSH - Pushes register onto the stack
     case 0xBE:
       if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {

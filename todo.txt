@@ -1,8 +1,4 @@
 -- Incomplete --
-DECX
-INCX
-DEY
-INCY
 ADCP
 SBCP
 XCHG
@@ -24,3 +20,7 @@ JSR - Less marks when implemented
 COM - No marks
 COMA - No marks
 COMB - No marks
+DECX - No marks
+INCX - No marks
+DECY - No marks
+INCY - No marks
