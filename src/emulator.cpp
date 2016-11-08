@@ -478,12 +478,12 @@ void load_register(int id, int reg) {
 }
 
 /**
- * Stores register into memory.
+ * Saves register into memory.
  *
  * @param id  method for retrieving address.
  * @param reg the register to use.
  */
-void store_register(int id, int reg) {
+void save_register(int id, int reg) {
   // Convert ID to LDAA/LDAB format for reusing the address fetching function.
   id -= 10;
 
@@ -947,12 +947,12 @@ void load_index_register(int id, int reg) {
 }
 
 /**
- * Stores register into memory.
+ * Saves register into memory.
  *
  * @param id  method for retrieving address.
  * @param reg the register to use.
  */
-void store_index_register(int id, int reg) {
+void save_index_register(int id, int reg) {
   // Fetch the address.
   WORD address = fetch_address(id);
 
@@ -987,11 +987,11 @@ void load_stackpointer(int id) {
 }
 
 /**
- * Stores stackpointer into memory.
+ * Saves stackpointer into memory.
  *
  * @param id method for retrieving address.
  */
-void store_stackpointer(int id) {
+void save_stackpointer(int id) {
   // Convert ID to LDAA/LDAB format for reusing the address fetching function.
   id -= 5;
 
@@ -1072,7 +1072,7 @@ void Group_1(BYTE opcode) {
     case 0xDA:
     case 0xEA:
     case 0xFA:
-      store_register(id, REGISTER_A);
+      save_register(id, REGISTER_A);
       break;
 
     // STORB
@@ -1081,7 +1081,7 @@ void Group_1(BYTE opcode) {
     case 0xDB:
     case 0xEB:
     case 0xFB:
-      store_register(id, REGISTER_B);
+      save_register(id, REGISTER_B);
       break;
 
     // ADC - Register added to accumulator with carry
@@ -1574,19 +1574,19 @@ void Group_1(BYTE opcode) {
 
 		// STOX
 		case 0xBC:
-			store_index_register(1, REGISTER_X);
+			save_index_register(1, REGISTER_X);
 			break;
 		case 0xCC:
-			store_index_register(2, REGISTER_X);
+			save_index_register(2, REGISTER_X);
 			break;
 		case 0xDC:
-			store_index_register(3, REGISTER_X);
+			save_index_register(3, REGISTER_X);
 			break;
 		case 0xEC:
-			store_index_register(4, REGISTER_X);
+			save_index_register(4, REGISTER_X);
 			break;
 		case 0xFC:
-			store_index_register(5, REGISTER_X);
+			save_index_register(5, REGISTER_X);
 			break;
 
 		// DECX - Decrements register X
@@ -1621,19 +1621,19 @@ void Group_1(BYTE opcode) {
 
 		// STOY
 		case 0xBD:
-			store_index_register(1, REGISTER_Y);
+			save_index_register(1, REGISTER_Y);
 			break;
 		case 0xCD:
-			store_index_register(2, REGISTER_Y);
+			save_index_register(2, REGISTER_Y);
 			break;
 		case 0xDD:
-			store_index_register(3, REGISTER_Y);
+			save_index_register(3, REGISTER_Y);
 			break;
 		case 0xED:
-			store_index_register(4, REGISTER_Y);
+			save_index_register(4, REGISTER_Y);
 			break;
 		case 0xFD:
-			store_index_register(5, REGISTER_Y);
+			save_index_register(5, REGISTER_Y);
 			break;
 
 		// CAY - Transfers accumulator to register Y
@@ -1673,7 +1673,7 @@ void Group_1(BYTE opcode) {
 		case 0x8A:
 		case 0x9A:
 		case 0xAA:
-			store_stackpointer(id);
+			save_stackpointer(id);
 			break;
 
 		// CSA - Transfers status register to accumulator
