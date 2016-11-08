@@ -991,6 +991,12 @@ void xchg(int reg1, int reg2) {
 
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
+  WORD address;
+  BYTE HB;
+  BYTE LB;
+  BYTE temp_reg;
+  BYTE data;
+  WORD temp_address;
 
   switch (opcode) {
     // LDAA
@@ -1549,13 +1555,13 @@ void Group_1(BYTE opcode) {
 
     // CAY - Transfers accumulator to register Y
     case 0xF0:
-      Registers[REGISTER_Y] = Registers[REGISTER_A];
-      set_flag_n(Registers[REGISTER_Y]);
+      Index_Registers[REGISTER_Y] = Registers[REGISTER_A];
+      set_flag_n(Index_Registers[REGISTER_Y]);
       break;
 
     // MYA - Transfers register Y to accumulator
     case 0xF1:
-      Registers[REGISTER_A] = Registers[REGISTER_Y];
+      Registers[REGISTER_A] = Index_Registers[REGISTER_Y];
       break;
 
     // DECY - Decrements register Y
@@ -1666,6 +1672,9 @@ void Group_1(BYTE opcode) {
     case 0x1C:
       Registers[REGISTER_L] = fetch();
       break;
+  	case 0x1D:
+  		Registers[REGISTER_H] = fetch();
+  		break;
 
     // ADCP - Adds register pair into accumulator pair
     case 0xF7:
@@ -1700,82 +1709,82 @@ void Group_1(BYTE opcode) {
 
     // JCC - Jump on carry clear
     case 0x11:
-      jump(Flags & FLAG_C == 0);
+      jump((Flags & FLAG_C) == 0);
       break;
 
     // JCS - Jump on carry set
     case 0x12:
-      jump(Flags & FLAG_C != 0);
+      jump((Flags & FLAG_C) != 0);
       break;
 
     // JNE - Jump on result not zero
     case 0x13:
-      jump(Flags & FLAG_Z == 0);
+      jump((Flags & FLAG_Z) != FLAG_Z);
       break;
 
     // JEQ - Jump on result equal to zero
     case 0x14:
-      jump(Flags & FLAG_Z != 0);
+      jump((Flags & FLAG_Z) == FLAG_Z);
       break;
 
     // JMI - Jump on negative result
     case 0x15:
-      jump(Flags & FLAG_N != 0);
+      jump((Flags & FLAG_N) != 0);
       break;
 
     // JPL - Jump on positive result
     case 0x16:
-      jump(Flags & FLAG_N == 0);
+      jump((Flags & FLAG_N) == 0);
       break;
 
     // JHI - Jump on result same or lower
     case 0x17:
-      jump(Flags & FLAG_Z != 0 || Flags & FLAG_C != 0);
+      jump((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0);
       break;
 
     // JLE - Jump on result higher
     case 0x18:
-      jump(Flags & FLAG_Z == 0 || Flags & FLAG_C == 0);
+      jump((Flags & FLAG_Z) == 0 || (Flags & FLAG_C) == 0);
       break;
 
     // CCC - Call on carry clear
     case 0x22:
-      jump_subroutine(Flags & FLAG_C == 0);
+      jump_subroutine((Flags & FLAG_C) == 0);
       break;
 
     // CCS - Call on carry set
     case 0x23:
-      jump_subroutine(Flags & FLAG_C != 0);
+      jump_subroutine((Flags & FLAG_C) != 0);
       break;
 
     // CNE - Call on not zero
     case 0x24:
-      jump_subroutine(Flags & FLAG_Z == 0);
+      jump_subroutine((Flags & FLAG_Z) == 0);
       break;
 
     // CEQ - Call on result equal to zero
     case 0x25:
-      jump_subroutine(Flags & FLAG_Z != 0);
+      jump_subroutine((Flags & FLAG_Z) != 0);
       break;
 
     // CMI - Call on negative result
     case 0x26:
-      jump_subroutine(Flags & FLAG_N != 0);
+      jump_subroutine((Flags & FLAG_N) != 0);
       break;
 
     // CPL - Call on positive result
     case 0x27:
-      jump_subroutine(Flags & FLAG_N == 0);
+      jump_subroutine((Flags & FLAG_N) == 0);
       break;
 
     // CHI - Call on result same or lower
     case 0x28:
-      jump_subroutine(Flags & FLAG_Z != 0 || Flags & FLAG_C != 0);
+      jump_subroutine((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0);
       break;
 
     // CLE - Call on result higher
     case 0x29:
-      jump(Flags & FLAG_Z == 0 || Flags & FLAG_C == 0);
+      jump((Flags & FLAG_Z) == 0 || (Flags & FLAG_C) == 0);
       break;
 
     // CLC - Clear carry flag
