@@ -411,6 +411,17 @@ void set_flag_c(WORD inReg) {
   }
 }
 
+/**
+ * Sets flags ZNC for the last calculation.
+ *
+ * @param inReg the number last calculated.
+ */
+void set_flags_znc(WORD inReg) {
+  set_flag_c(inReg);
+  set_flag_n((BYTE) inReg);
+  set_flag_z((BYTE) inReg);
+}
+
 WORD join_address(BYTE higher, BYTE lower) {
   return (WORD) ((WORD) higher << 8) + lower;
 }
@@ -486,101 +497,6 @@ void store_register(int id, int reg) {
 }
 
 /**
- * Loads register from memory.
- *
- * @param id  method for retrieving address.
- * @param reg the register to use.
- */
-void load_index_register(int id, int reg) {
-  // ID 0 does not require an address.
-  if (id == 0) {
-    Index_Registers[reg] = fetch();
-    return;
-  }
-
-  // Fetch the address.
-  WORD address = fetch_address(id);
-
-  // Load memory into accumulator.
-  if (address >= 0 && address < MEMORY_SIZE) {
-    Index_Registers[reg] = Memory[address];
-  }
-}
-
-/**
- * Stores register into memory.
- *
- * @param id  method for retrieving address.
- * @param reg the register to use.
- */
-void store_index_register(int id, int reg) {
-  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
-  id -= 10;
-
-  // Fetch the address.
-  WORD address = fetch_address(id);
-
-  // Store accumulator into memory if address is valid.
-  if (address >= 0 && address < MEMORY_SIZE) {
-    Memory[address] = Index_Registers[reg];
-  }
-}
-
-/**
- * Loads stackpointer from memory.
- *
- * @param id method for retrieving address.
- */
-void load_stackpointer(int id) {
-  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
-  id -= 2;
-
-  // ID 0 does not require an address.
-  if (id == 0) {
-    StackPointer = (fetch() << 8) + fetch();
-    return;
-  }
-
-  // Fetch the address.
-  WORD address = fetch_address(id);
-
-  // Load stackpointer from memory if address is valid.
-  if (address >= 0 && address < MEMORY_SIZE - 1) {
-    StackPointer = ((WORD) Memory[address] << 8) + Memory[address + 1];
-  }
-}
-
-/**
- * Stores stackpointer into memory.
- *
- * @param id method for retrieving address.
- */
-void store_stackpointer(int id) {
-  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
-  id -= 5;
-
-  // Fetch the address.
-  WORD address = fetch_address(id);
-
-  // Store stackpointer into memory if address is valid.
-  if (address >= 0 && address < MEMORY_SIZE - 1) {
-    Memory[address] = (WORD) (StackPointer >> 8);
-    Memory[address + 1] = (WORD) StackPointer;
-  }
-}
-
-/**
- * Sets flags ZNC for the last calculation.
- *
- * @param inReg the number last calculated.
- */
-void set_flags_znc(WORD inReg) {
-  set_flag_c(inReg);
-  set_flag_n((BYTE) inReg);
-  set_flag_z((BYTE) inReg);
-}
-
-/**
  * Adds register to accumulator with carry.
  *
  * @param accumulator the accumulator to add to.
@@ -643,7 +559,7 @@ void sub(int accumulator, int reg) {
  * @param reg         the register to compare.
  */
 void cmp(int accumulator, int reg) {
-  WORD answer = (WORD) Registers[accumulator] + (WORD) Registers[reg];
+  WORD answer = (WORD) Registers[accumulator] - (WORD) Registers[reg];
   set_flags_znc(answer);
 }
 
@@ -693,57 +609,6 @@ void _bit(int accumulator, int reg) {
   BYTE answer = Registers[accumulator] & Registers[reg];
   set_flag_z(answer);
   set_flag_n(answer);
-}
-
-void sal_memory(int id) {
-  // Get the address.
-  WORD address = fetch_address(id);
-
-  // Do nothing if address is out of range.
-	if (address < 0 || address >= MEMORY_SIZE) {
-    return;
-  }
-
-  // Set the carry flag.
-	if (Memory[address] < 128) {
-		Flags = Flags & (0xFF - FLAG_C);
-	} else {
-		Flags = Flags | FLAG_C;
-	}
-
-  // Update memory and set negative and zero flags.
-  Memory[address] <<= 1;
-  set_flag_n(Memory[address]);
-  set_flag_z(Memory[address]);
-}
-
-/**
- * Arithmetic shift left accumulator.
- *
- * @param accumulator the accumulator.
- */
-void sal_accumulator(int accumulator) {
-  WORD answer = Registers[accumulator] << 1;
-  Registers[accumulator] = (BYTE) answer;
-  set_flags_znc(answer);
-}
-
-void jump(bool condition) {
-  WORD address = fetch_address(1);
-  if (condition) {
-    ProgramCounter = address;
-  }
-}
-
-void jump_subroutine(bool condition) {
-  WORD address = fetch_address(1);
-  if (condition) {
-    if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
-      Memory[StackPointer--] = (BYTE) ProgramCounter;
-      Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
-    }
-    ProgramCounter = address;
-  }
 }
 
 void sbi_accumulator(int accumulator) {
@@ -879,6 +744,39 @@ void rlc_accumulator(int accumulator) {
   Registers[accumulator] = data;
   set_flag_n(Registers[accumulator]);
   set_flag_z(Registers[accumulator]);
+}
+
+void sal_memory(int id) {
+  // Get the address.
+  WORD address = fetch_address(id);
+
+  // Do nothing if address is out of range.
+	if (address < 0 || address >= MEMORY_SIZE) {
+    return;
+  }
+
+  // Set the carry flag.
+	if (Memory[address] < 128) {
+		Flags = Flags & (0xFF - FLAG_C);
+	} else {
+		Flags = Flags | FLAG_C;
+	}
+
+  // Update memory and set negative and zero flags.
+  Memory[address] <<= 1;
+  set_flag_n(Memory[address]);
+  set_flag_z(Memory[address]);
+}
+
+/**
+ * Arithmetic shift left accumulator.
+ *
+ * @param accumulator the accumulator.
+ */
+void sal_accumulator(int accumulator) {
+  WORD answer = Registers[accumulator] << 1;
+  Registers[accumulator] = (BYTE) answer;
+  set_flags_znc(answer);
 }
 
 void sar_memory(int id) {
@@ -1024,20 +922,119 @@ void rr_accumulator(int accumulator) {
   set_flag_z(Registers[accumulator]);
 }
 
+/**
+ * Loads register from memory.
+ *
+ * @param id  method for retrieving address.
+ * @param reg the register to use.
+ */
+void load_index_register(int id, int reg) {
+  // ID 0 does not require an address.
+  if (id == 0) {
+    Index_Registers[reg] = fetch();
+    return;
+  }
+
+  // Fetch the address.
+  WORD address = fetch_address(id);
+
+  // Load memory into accumulator.
+  if (address >= 0 && address < MEMORY_SIZE) {
+    Index_Registers[reg] = Memory[address];
+  }
+}
+
+/**
+ * Stores register into memory.
+ *
+ * @param id  method for retrieving address.
+ * @param reg the register to use.
+ */
+void store_index_register(int id, int reg) {
+  // Fetch the address.
+  WORD address = fetch_address(id);
+
+  // Store accumulator into memory if address is valid.
+  if (address >= 0 && address < MEMORY_SIZE) {
+    Memory[address] = Index_Registers[reg];
+  }
+}
+
+/**
+ * Loads stackpointer from memory.
+ *
+ * @param id method for retrieving address.
+ */
+void load_stackpointer(int id) {
+  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
+  id -= 2;
+
+  // ID 0 does not require an address.
+  if (id == 0) {
+    StackPointer = (fetch() << 8) + fetch();
+    return;
+  }
+
+  // Fetch the address.
+  WORD address = fetch_address(id);
+
+  // Load stackpointer from memory if address is valid.
+  if (address >= 0 && address < MEMORY_SIZE - 1) {
+    StackPointer = ((WORD) Memory[address] << 8) + Memory[address + 1];
+  }
+}
+
+/**
+ * Stores stackpointer into memory.
+ *
+ * @param id method for retrieving address.
+ */
+void store_stackpointer(int id) {
+  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
+  id -= 5;
+
+  // Fetch the address.
+  WORD address = fetch_address(id);
+
+  // Store stackpointer into memory if address is valid.
+  if (address >= 0 && address < MEMORY_SIZE - 1) {
+    Memory[address] = (WORD) (StackPointer >> 8);
+    Memory[address + 1] = (WORD) StackPointer;
+  }
+}
+
 void xchg(int reg1, int reg2) {
   BYTE data = Registers[reg1];
   Registers[reg1] = Registers[reg2];
   Registers[reg2] = data;
 }
 
+void jump(bool condition) {
+  WORD address = fetch_address(1);
+  if (condition) {
+    ProgramCounter = address;
+  }
+}
+
+void jump_subroutine(bool condition) {
+  WORD address = fetch_address(1);
+  if (condition) {
+    if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
+      Memory[StackPointer--] = (BYTE) ProgramCounter;
+      Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
+    }
+    ProgramCounter = address;
+  }
+}
+
 void Group_1(BYTE opcode) {
   int id = opcode >> 4;
-  WORD address;
-  BYTE HB;
-  BYTE LB;
-  BYTE temp_reg;
-  BYTE data;
-  WORD temp_address;
+  WORD address = 0;
+  BYTE HB = 0;
+  BYTE LB = 0;
+  BYTE temp_reg = 0;
+  BYTE data = 0;
+  WORD temp_address = 0;
 
   switch (opcode) {
     // LDAA
@@ -1548,21 +1545,39 @@ void Group_1(BYTE opcode) {
 
     // LDX
     case 0x0E:
+      load_index_register(0, REGISTER_X);
+      break;
     case 0x1E:
+      load_index_register(1, REGISTER_X);
+      break;
     case 0x2E:
+      load_index_register(2, REGISTER_X);
+      break;
     case 0x3E:
+      load_index_register(3, REGISTER_X);
+      break;
     case 0x4E:
+      load_index_register(4, REGISTER_X);
+      break;
     case 0x5E:
-      load_index_register(id, REGISTER_X);
+      load_index_register(5, REGISTER_X);
       break;
 
     // STOX
     case 0xBC:
+      store_index_register(1, REGISTER_X);
+      break;
     case 0xCC:
+      store_index_register(2, REGISTER_X);
+      break;
     case 0xDC:
+      store_index_register(3, REGISTER_X);
+      break;
     case 0xEC:
+      store_index_register(4, REGISTER_X);
+      break;
     case 0xFC:
-      store_index_register(id, REGISTER_X);
+      store_index_register(5, REGISTER_X);
       break;
 
     // DECX - Decrements register X
@@ -1577,21 +1592,39 @@ void Group_1(BYTE opcode) {
 
     // LDY
     case 0x0F:
+      load_index_register(0, REGISTER_Y);
+      break;
     case 0x1F:
+      load_index_register(1, REGISTER_Y);
+      break;
     case 0x2F:
+      load_index_register(2, REGISTER_Y);
+      break;
     case 0x3F:
+      load_index_register(3, REGISTER_Y);
+      break;
     case 0x4F:
+      load_index_register(4, REGISTER_Y);
+      break;
     case 0x5F:
-      load_index_register(id, REGISTER_Y);
+      load_index_register(5, REGISTER_Y);
       break;
 
     // STOY
     case 0xBD:
+      store_index_register(1, REGISTER_Y);
+      break;
     case 0xCD:
+      store_index_register(2, REGISTER_Y);
+      break;
     case 0xDD:
+      store_index_register(3, REGISTER_Y);
+      break;
     case 0xED:
+      store_index_register(4, REGISTER_Y);
+      break;
     case 0xFD:
-      store_index_register(id, REGISTER_Y);
+      store_index_register(5, REGISTER_Y);
       break;
 
     // CAY - Transfers accumulator to register Y
