@@ -850,18 +850,20 @@ void lsr_accumulator(int accumulator) {
 }
 
 void com_memory(int id) {
-  WORD address = fetch_address(id);
-  if (address < 0 || address >= MEMORY_SIZE) {
-    return;
-  }
+	WORD address = fetch_address(id);
+	if (address < 0 && address >= MEMORY_SIZE) {
+		return;
+	}
 
-  Memory[address] = ~(Memory[address]);
-  set_flags_znc(Memory[address]);
+	WORD data = ~Memory[address];
+	Memory[address] = (BYTE) data;
+	set_flags_znc(data);
 }
 
 void com_accumulator(int accumulator) {
-  Registers[accumulator] = ~(Registers[accumulator]);
-  set_flags_znc(Registers[accumulator]);
+	WORD data = ~Registers[accumulator];
+  Registers[accumulator] = (BYTE) data;
+  set_flags_znc(data);
 }
 
 void rol_memory(int id) {
@@ -1020,21 +1022,22 @@ void jump_subroutine(bool condition) {
   WORD address = fetch_address(1);
   if (condition) {
     if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
-      Memory[StackPointer--] = (BYTE) ProgramCounter;
-      Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
+      Memory[StackPointer--] = ProgramCounter >> 8;
+      Memory[StackPointer--] = ProgramCounter;
     }
     ProgramCounter = address;
   }
 }
 
 void Group_1(BYTE opcode) {
-  int id = opcode >> 4;
-  WORD address = 0;
-  BYTE HB = 0;
   BYTE LB = 0;
-  BYTE temp_reg = 0;
-  BYTE data = 0;
+  BYTE HB = 0;
+  WORD address = 0;
+  WORD data = 0;
+  WORD temp_reg = 0;
   WORD temp_address = 0;
+  int j = 0;
+  int id = opcode >> 4;
 
   switch (opcode) {
     // LDAA
@@ -1493,421 +1496,420 @@ void Group_1(BYTE opcode) {
       com_accumulator(REGISTER_B);
       break;
 
-    // ROL - Rotate memory left without carry (abs)
-    case 0xA8:
-      rol_memory(1);
-      break;
+		// ROL - Rotate memory left without carry (abs)
+		case 0xA8:
+			rol_memory(1);
+			break;
 
-    // ROL - Rotate memory left without carry (abs X)
-    case 0xB8:
-      rol_memory(2);
-      break;
+		// ROL - Rotate memory left without carry (abs X)
+		case 0xB8:
+			rol_memory(2);
+			break;
 
-    // ROL - Rotate memory left without carry (abs Y)
-    case 0xC8:
-      rol_memory(3);
-      break;
+		// ROL - Rotate memory left without carry (abs Y)
+		case 0xC8:
+			rol_memory(3);
+			break;
 
-    // ROLA - Rotate accumulator left without carry
-    case 0xD8:
-      rol_accumulator(REGISTER_A);
-      break;
+		// ROLA - Rotate accumulator left without carry
+		case 0xD8:
+			rol_accumulator(REGISTER_A);
+			break;
 
-    // ROLB - Rotate accumulator left without carry
-    case 0xE8:
-      rol_accumulator(REGISTER_B);
-      break;
+		// ROLB - Rotate accumulator left without carry
+		case 0xE8:
+			rol_accumulator(REGISTER_B);
+			break;
 
-    // RR - Rotate memory right without carry (abs)
-    case 0xA9:
-      rr_memory(1);
-      break;
+		// RR - Rotate memory right without carry (abs)
+		case 0xA9:
+			rr_memory(1);
+			break;
 
-    // RR - Rotate memory right without carry (abs X)
-    case 0xB9:
-      rr_memory(2);
-      break;
+		// RR - Rotate memory right without carry (abs X)
+		case 0xB9:
+			rr_memory(2);
+			break;
 
-    // RR - Rotate memory right without carry (abs Y)
-    case 0xC9:
-      rr_memory(3);
-      break;
+		// RR - Rotate memory right without carry (abs Y)
+		case 0xC9:
+			rr_memory(3);
+			break;
 
-    // RRA - Rotate accumulator right without carry
-    case 0xD9:
-      rr_accumulator(REGISTER_A);
-      break;
+		// RRA - Rotate accumulator right without carry
+		case 0xD9:
+			rr_accumulator(REGISTER_A);
+			break;
 
-    // RRB - Rotate accumulator right without carry
-    case 0xE9:
-      rr_accumulator(REGISTER_B);
-      break;
+		// RRB - Rotate accumulator right without carry
+		case 0xE9:
+			rr_accumulator(REGISTER_B);
+			break;
 
-    // LDX
-    case 0x0E:
-      load_index_register(0, REGISTER_X);
-      break;
-    case 0x1E:
-      load_index_register(1, REGISTER_X);
-      break;
-    case 0x2E:
-      load_index_register(2, REGISTER_X);
-      break;
-    case 0x3E:
-      load_index_register(3, REGISTER_X);
-      break;
-    case 0x4E:
-      load_index_register(4, REGISTER_X);
-      break;
-    case 0x5E:
-      load_index_register(5, REGISTER_X);
-      break;
+		// LDX
+		case 0x0E:
+			load_index_register(0, REGISTER_X);
+			break;
+		case 0x1E:
+			load_index_register(1, REGISTER_X);
+			break;
+		case 0x2E:
+			load_index_register(2, REGISTER_X);
+			break;
+		case 0x3E:
+			load_index_register(3, REGISTER_X);
+			break;
+		case 0x4E:
+			load_index_register(4, REGISTER_X);
+			break;
+		case 0x5E:
+			load_index_register(5, REGISTER_X);
+			break;
 
-    // STOX
-    case 0xBC:
-      store_index_register(1, REGISTER_X);
-      break;
-    case 0xCC:
-      store_index_register(2, REGISTER_X);
-      break;
-    case 0xDC:
-      store_index_register(3, REGISTER_X);
-      break;
-    case 0xEC:
-      store_index_register(4, REGISTER_X);
-      break;
-    case 0xFC:
-      store_index_register(5, REGISTER_X);
-      break;
+		// STOX
+		case 0xBC:
+			store_index_register(1, REGISTER_X);
+			break;
+		case 0xCC:
+			store_index_register(2, REGISTER_X);
+			break;
+		case 0xDC:
+			store_index_register(3, REGISTER_X);
+			break;
+		case 0xEC:
+			store_index_register(4, REGISTER_X);
+			break;
+		case 0xFC:
+			store_index_register(5, REGISTER_X);
+			break;
 
-    // DECX - Decrements register X
-    case 0x01:
-      set_flag_z(--Index_Registers[REGISTER_X]);
-      break;
+		// DECX - Decrements register X
+		case 0x01:
+			set_flag_z(--Index_Registers[REGISTER_X]);
+			break;
 
-    // INCX - Increments register X
-    case 0x02:
-      set_flag_z(++Index_Registers[REGISTER_X]);
-      break;
+		// INCX - Increments register X
+		case 0x02:
+			set_flag_z(++Index_Registers[REGISTER_X]);
+			break;
 
-    // LDY
-    case 0x0F:
-      load_index_register(0, REGISTER_Y);
-      break;
-    case 0x1F:
-      load_index_register(1, REGISTER_Y);
-      break;
-    case 0x2F:
-      load_index_register(2, REGISTER_Y);
-      break;
-    case 0x3F:
-      load_index_register(3, REGISTER_Y);
-      break;
-    case 0x4F:
-      load_index_register(4, REGISTER_Y);
-      break;
-    case 0x5F:
-      load_index_register(5, REGISTER_Y);
-      break;
+		// LDY
+		case 0x0F:
+			load_index_register(0, REGISTER_Y);
+			break;
+		case 0x1F:
+			load_index_register(1, REGISTER_Y);
+			break;
+		case 0x2F:
+			load_index_register(2, REGISTER_Y);
+			break;
+		case 0x3F:
+			load_index_register(3, REGISTER_Y);
+			break;
+		case 0x4F:
+			load_index_register(4, REGISTER_Y);
+			break;
+		case 0x5F:
+			load_index_register(5, REGISTER_Y);
+			break;
 
-    // STOY
-    case 0xBD:
-      store_index_register(1, REGISTER_Y);
-      break;
-    case 0xCD:
-      store_index_register(2, REGISTER_Y);
-      break;
-    case 0xDD:
-      store_index_register(3, REGISTER_Y);
-      break;
-    case 0xED:
-      store_index_register(4, REGISTER_Y);
-      break;
-    case 0xFD:
-      store_index_register(5, REGISTER_Y);
-      break;
+		// STOY
+		case 0xBD:
+			store_index_register(1, REGISTER_Y);
+			break;
+		case 0xCD:
+			store_index_register(2, REGISTER_Y);
+			break;
+		case 0xDD:
+			store_index_register(3, REGISTER_Y);
+			break;
+		case 0xED:
+			store_index_register(4, REGISTER_Y);
+			break;
+		case 0xFD:
+			store_index_register(5, REGISTER_Y);
+			break;
 
-    // CAY - Transfers accumulator to register Y
-    case 0xF0:
-      Index_Registers[REGISTER_Y] = Registers[REGISTER_A];
-      set_flag_n(Index_Registers[REGISTER_Y]);
-      break;
+		// CAY - Transfers accumulator to register Y
+		case 0xF0:
+			Index_Registers[REGISTER_Y] = Registers[REGISTER_A];
+			set_flag_n(Index_Registers[REGISTER_Y]);
+			break;
 
-    // MYA - Transfers register Y to accumulator
-    case 0xF1:
-      Registers[REGISTER_A] = Index_Registers[REGISTER_Y];
-      break;
+		// MYA - Transfers register Y to accumulator
+		case 0xF1:
+			Registers[REGISTER_A] = Index_Registers[REGISTER_Y];
+			break;
 
-    // DECY - Decrements register Y
-    case 0x03:
-      set_flag_z(--Index_Registers[REGISTER_Y]);
-      break;
+		// DECY - Decrements register Y
+		case 0x03:
+			set_flag_z(--Index_Registers[REGISTER_Y]);
+			break;
 
-    // INCY - Increments register Y
-    case 0x04:
-      set_flag_z(++Index_Registers[REGISTER_Y]);
-      break;
+		// INCY - Increments register Y
+		case 0x04:
+			set_flag_z(++Index_Registers[REGISTER_Y]);
+			break;
 
-    // LODS
-    case 0x20:
-    case 0x30:
-    case 0x40:
-    case 0x50:
-    case 0x60:
-    case 0x70:
-      load_stackpointer(id);
-      break;
+		// LODS
+		case 0x20:
+		case 0x30:
+		case 0x40:
+		case 0x50:
+		case 0x60:
+		case 0x70:
+			load_stackpointer(id);
+			break;
 
-    // STOS
-    case 0x6A:
-    case 0x7A:
-    case 0x8A:
-    case 0x9A:
-    case 0xAA:
-      store_stackpointer(id);
-      break;
+		// STOS
+		case 0x6A:
+		case 0x7A:
+		case 0x8A:
+		case 0x9A:
+		case 0xAA:
+			store_stackpointer(id);
+			break;
 
-    // CSA - Transfers status register to accumulator
-    case 0xF2:
-      Registers[REGISTER_A] = Flags;
-      break;
+		// CSA - Transfers status register to accumulator
+		case 0xF2:
+			Registers[REGISTER_A] = Flags;
+			break;
 
-    // PUSH - Pushes register onto the stack
-    case 0xBE:
-      Memory[StackPointer--] = Registers[REGISTER_A];
-      break;
-    case 0xCE:
-      Memory[StackPointer--] = Registers[REGISTER_B];
-      break;
-    case 0xDE:
-      Memory[StackPointer--] = Registers[Flags];
-      break;
-    case 0xEE:
-      Memory[StackPointer--] = Registers[REGISTER_L];
-      break;
-    case 0xFE:
-      Memory[StackPointer--] = Registers[REGISTER_H];
-      break;
+		// PUSH - Pushes register onto the stack
+		case 0xBE:
+			Memory[StackPointer--] = Registers[REGISTER_A];
+			break;
+		case 0xCE:
+			Memory[StackPointer--] = Registers[REGISTER_B];
+			break;
+		case 0xDE:
+			Memory[StackPointer--] = Registers[Flags];
+			break;
+		case 0xEE:
+			Memory[StackPointer--] = Registers[REGISTER_L];
+			break;
+		case 0xFE:
+			Memory[StackPointer--] = Registers[REGISTER_H];
+			break;
 
-    // POP - Pop the top of the stack to the register
-    case 0xBF:
-      Registers[REGISTER_A] = Memory[++StackPointer];
-      break;
-    case 0xCF:
-      Registers[REGISTER_B] = Memory[++StackPointer];
-      break;
-    case 0xDF:
-      Registers[Flags] = Memory[++StackPointer];
-      break;
-    case 0xEF:
-      Registers[REGISTER_L] = Memory[++StackPointer];
-      break;
-    case 0xFF:
-      Registers[REGISTER_H] = Memory[++StackPointer];
-      break;
+		// POP - Pop the top of the stack to the register
+		case 0xBF:
+			Registers[REGISTER_A] = Memory[++StackPointer];
+			break;
+		case 0xCF:
+			Registers[REGISTER_B] = Memory[++StackPointer];
+			break;
+		case 0xDF:
+			Registers[Flags] = Memory[++StackPointer];
+			break;
+		case 0xEF:
+			Registers[REGISTER_L] = Memory[++StackPointer];
+			break;
+		case 0xFF:
+			Registers[REGISTER_H] = Memory[++StackPointer];
+			break;
 
-    // LX - Loads memory into register pair
-    case 0x0C:
-    case 0x0D:
-      Registers[REGISTER_H] = fetch();
-      Registers[REGISTER_L] = fetch();
-      break;
+		// LX - Loads memory into register pair
+		case 0x0C:
+		case 0x0D:
+			Registers[REGISTER_H] = fetch();
+			Registers[REGISTER_L] = fetch();
+			break;
 
-    // JMP - Loads memory into program counter
-    case 0x10:
-      ProgramCounter = fetch_address(1);
-      break;
+		// JMP - Loads memory into program counter
+		case 0x10:
+			ProgramCounter = fetch_address(1);
+			break;
 
-    // ABA - Adds accumulator B into accumulator A
-    case 0xF3:
-      Registers[REGISTER_A] += Registers[REGISTER_B];
-      set_flags_znc(Registers[REGISTER_A]);
-      break;
+		// ABA - Adds accumulator B into accumulator A
+		case 0xF3:
+			Registers[REGISTER_A] += Registers[REGISTER_B];
+			set_flags_znc(Registers[REGISTER_A]);
+			break;
 
-    // SBA - Subtracts accumulator B from accumulator A
-    case 0xF4:
-      Registers[REGISTER_A] -= Registers[REGISTER_B];
-      set_flags_znc(Registers[REGISTER_A]);
-      break;
+		// SBA - Subtracts accumulator B from accumulator A
+		case 0xF4:
+			Registers[REGISTER_A] -= Registers[REGISTER_B];
+			set_flags_znc(Registers[REGISTER_A]);
+			break;
 
-    // AAB - Adds accumulator A into accumulator B
-    case 0xF5:
-      Registers[REGISTER_B] += Registers[REGISTER_A];
-      set_flags_znc(Registers[REGISTER_B]);
-      break;
+		// AAB - Adds accumulator A into accumulator B
+		case 0xF5:
+			Registers[REGISTER_B] += Registers[REGISTER_A];
+			set_flags_znc(Registers[REGISTER_B]);
+			break;
 
-    // SAB - Subtracts accumulator A from accumulator B
-    case 0xF6:
-      Registers[REGISTER_B] -= Registers[REGISTER_A];
-      set_flags_znc(Registers[REGISTER_B]);
-      break;
+		// SAB - Subtracts accumulator A from accumulator B
+		case 0xF6:
+			Registers[REGISTER_B] -= Registers[REGISTER_A];
+			set_flags_znc(Registers[REGISTER_B]);
+			break;
 
-    // MVI - Loads memory into register
-    case 0x1C:
-      Registers[REGISTER_L] = fetch();
-      break;
-  	case 0x1D:
-  		Registers[REGISTER_H] = fetch();
-  		break;
+		// MVI - Loads memory into register
+		case 0x1C:
+			Registers[REGISTER_L] = fetch();
+			break;
+		case 0x1D:
+			Registers[REGISTER_H] = fetch();
+			break;
 
-    // ADCP - Adds register pair into accumulator pair
-    case 0xF7:
-      adc(REGISTER_A, REGISTER_L);
-      break;
+		// ADCP - Adds register pair into accumulator pair
+		case 0xF7:
+			adc(REGISTER_A, REGISTER_L);
+			break;
 
-    // SBCP - Subtracts register pair into accumulator pair
-    case 0xF8:
-      sbc(REGISTER_A, REGISTER_L);
-      break;
+		// SBCP - Subtracts register pair into accumulator pair
+		case 0xF8:
+			sbc(REGISTER_A, REGISTER_L);
+			break;
 
-    // XCHG - Swaps the registers contents
-    case 0x92:
-      xchg(REGISTER_A, REGISTER_L);
-      break;
+		// XCHG - Swaps the registers contents
+		case 0x92:
+			xchg(REGISTER_A, REGISTER_L);
+			break;
 
-    // JSR - Jump subroutine
-    case 0x21:
-      if (StackPointer >= 2 && StackPointer < MEMORY_SIZE) {
-        Memory[StackPointer--] = (BYTE) ProgramCounter;
-        Memory[StackPointer--] = (BYTE) (ProgramCounter >> 8);
-      }
-      ProgramCounter = fetch_address(1);
-      break;
+  	// JSR - Jump subroutine
+	  case 0x21:
+			address = fetch_address(1);
+	    Memory[StackPointer--] = ProgramCounter >> 8;
+	    Memory[StackPointer--] = ProgramCounter;
+	    ProgramCounter = address;
+	    break;
 
     // RET - Return from subroutine
-    case 0x4C:
-      if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 2) {
-        ProgramCounter = join_address(Memory[StackPointer++], Memory[StackPointer++]);
-      }
-      break;
+	  case 0x4C:
+	    HB = Memory[StackPointer++];
+	    LB = Memory[StackPointer++];
+	    ProgramCounter = join_address(HB, LB);
+	    break;
 
-    // JCC - Jump on carry clear
-    case 0x11:
-      jump((Flags & FLAG_C) == 0);
-      break;
+		// JCC - Jump on carry clear
+		case 0x11:
+			jump((Flags & FLAG_C) == 0);
+			break;
 
-    // JCS - Jump on carry set
-    case 0x12:
-      jump((Flags & FLAG_C) != 0);
-      break;
+		// JCS - Jump on carry set
+		case 0x12:
+			jump((Flags & FLAG_C) != 0);
+			break;
 
-    // JNE - Jump on result not zero
-    case 0x13:
-      jump((Flags & FLAG_Z) != FLAG_Z);
-      break;
+		// JNE - Jump on result not zero
+		case 0x13:
+			jump((Flags & FLAG_Z) != FLAG_Z);
+			break;
 
-    // JEQ - Jump on result equal to zero
-    case 0x14:
-      jump((Flags & FLAG_Z) == FLAG_Z);
-      break;
+		// JEQ - Jump on result equal to zero
+		case 0x14:
+			jump((Flags & FLAG_Z) == FLAG_Z);
+			break;
 
-    // JMI - Jump on negative result
-    case 0x15:
-      jump((Flags & FLAG_N) != 0);
-      break;
+		// JMI - Jump on negative result
+		case 0x15:
+			jump((Flags & FLAG_N) != 0);
+			break;
 
-    // JPL - Jump on positive result
-    case 0x16:
-      jump((Flags & FLAG_N) == 0);
-      break;
+		// JPL - Jump on positive result
+		case 0x16:
+			jump((Flags & FLAG_N) == 0);
+			break;
 
-    // JHI - Jump on result same or lower
-    case 0x17:
-      jump((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0);
-      break;
+		// JHI - Jump on result same or lower
+		case 0x17:
+			jump((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0);
+			break;
 
-    // JLE - Jump on result higher
-    case 0x18:
-      jump(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z))));
-      break;
+		// JLE - Jump on result higher
+		case 0x18:
+			jump(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z))));
+			break;
 
     // CCC - Call on carry clear
-    case 0x22:
-      jump_subroutine((Flags & FLAG_C) == 0);
-      break;
+	  case 0x22:
+			jump_subroutine((Flags & FLAG_C) != FLAG_C);
+	    break;
 
     // CCS - Call on carry set
-    case 0x23:
-      jump_subroutine((Flags & FLAG_C) != 0);
-      break;
+	  case 0x23:
+			jump_subroutine((Flags & FLAG_C) == FLAG_C);
+	    break;
 
     // CNE - Call on not zero
-    case 0x24:
-      jump_subroutine((Flags & FLAG_Z) == 0);
-      break;
+	  case 0x24:
+			jump_subroutine((Flags & FLAG_Z) != FLAG_Z);
+	    break;
 
-    // CEQ - Call on result equal to zero
-    case 0x25:
-      jump_subroutine((Flags & FLAG_Z) != 0);
-      break;
+		// CEQ - Call on result equal to zero
+		case 0x25:
+			jump_subroutine((Flags & FLAG_Z) != 0);
+			break;
 
     // CMI - Call on negative result
-    case 0x26:
-      jump_subroutine((Flags & FLAG_N) != 0);
-      break;
+	  case 0x26:
+			jump_subroutine((Flags & FLAG_N) == FLAG_N);
+	    break;
 
     // CPL - Call on positive result
-    case 0x27:
-      jump_subroutine((Flags & FLAG_N) == 0);
-      break;
+	  case 0x27:
+			jump_subroutine((Flags & FLAG_N) != FLAG_N);
+	    break;
 
     // CHI - Call on result same or lower
-    case 0x28:
-      jump_subroutine((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0);
-      break;
+	  case 0x28:
+			jump_subroutine((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z)));
+	    break;
 
-    // CLE - Call on result higher
-    case 0x29:
-      jump(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z))));
-      break;
+	    //START OF CLE - CALL ON RESULT HIGHER
+	  case 0x29:
+			jump_subroutine(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z))));
+	    break;
 
-    // CLC - Clear carry flag
-    case 0x05:
-      Flags = Flags & (0xFF - FLAG_C);
-      break;
+		// CLC - Clear carry flag
+		case 0x05:
+			Flags = Flags & (0xFF - FLAG_C);
+			break;
 
-    // STC - Set carry flag
-    case 0x06:
-      Flags = Flags | FLAG_C;
-      break;
+		// STC - Set carry flag
+		case 0x06:
+			Flags = Flags | FLAG_C;
+			break;
 
-    // CLI - Clear interrupt flag
-    case 0x07:
-      Flags = Flags & (0xFF - FLAG_I);
-      break;
+		// CLI - Clear interrupt flag
+		case 0x07:
+			Flags = Flags & (0xFF - FLAG_I);
+			break;
 
-    // STI - Set interrupt flag
-    case 0x08:
-      Flags = Flags | FLAG_I;
-      break;
+		// STI - Set interrupt flag
+		case 0x08:
+			Flags = Flags | FLAG_I;
+			break;
 
-    // NOP - No operation
-    case 0x2C:
-      break;
+		// NOP - No operation
+		case 0x2C:
+			break;
 
-    // HLT - Wait for interrupt
-    case 0x2D:
-      halt = true;
-      break;
+		// HLT - Wait for interrupt
+		case 0x2D:
+			halt = true;
+			break;
 
-  	// SWI - Software interrupt
-  	case 0x5C:
-  		Flags |= FLAG_I;
-  		Memory[StackPointer--] = Registers[REGISTER_A];
-  		Memory[StackPointer--] = Registers[REGISTER_B];
-  		Memory[StackPointer--] = Registers[Flags];
-  		Memory[StackPointer--] = Registers[REGISTER_L];
-  		Memory[StackPointer--] = Registers[REGISTER_H];
-  		break;
+		// SWI - Software interrupt
+		case 0x5C:
+			Flags |= FLAG_I;
+			Memory[StackPointer--] = Registers[REGISTER_A];
+			Memory[StackPointer--] = Registers[REGISTER_B];
+			Memory[StackPointer--] = Registers[Flags];
+			Memory[StackPointer--] = Registers[REGISTER_L];
+			Memory[StackPointer--] = Registers[REGISTER_H];
+			break;
 
-    // RTI - Return from software interrupt
-    case 0x5D:
-  		Registers[REGISTER_L] = Memory[++StackPointer];
-  		Registers[REGISTER_H] = Memory[++StackPointer];
-  		Registers[Flags] = Memory[++StackPointer];
-  		Registers[REGISTER_B] = Memory[++StackPointer];
-  		Registers[REGISTER_A] = Memory[++StackPointer];
-  		break;
+		// RTI - Return from software interrupt
+		case 0x5D:
+			Registers[REGISTER_L] = Memory[++StackPointer];
+			Registers[REGISTER_H] = Memory[++StackPointer];
+			Registers[Flags] = Memory[++StackPointer];
+			Registers[REGISTER_B] = Memory[++StackPointer];
+			Registers[REGISTER_A] = Memory[++StackPointer];
+			break;
   }
 }
 
