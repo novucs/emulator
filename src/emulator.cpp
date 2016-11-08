@@ -486,6 +486,47 @@ void store_register(int id, int reg) {
 }
 
 /**
+ * Loads register from memory.
+ *
+ * @param id  method for retrieving address.
+ * @param reg the register to use.
+ */
+void load_index_register(int id, int reg) {
+  // ID 0 does not require an address.
+  if (id == 0) {
+    Index_Registers[reg] = fetch();
+    return;
+  }
+
+  // Fetch the address.
+  WORD address = fetch_address(id);
+
+  // Load memory into accumulator.
+  if (address >= 0 && address < MEMORY_SIZE) {
+    Index_Registers[reg] = Memory[address];
+  }
+}
+
+/**
+ * Stores register into memory.
+ *
+ * @param id  method for retrieving address.
+ * @param reg the register to use.
+ */
+void store_index_register(int id, int reg) {
+  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
+  id -= 10;
+
+  // Fetch the address.
+  WORD address = fetch_address(id);
+
+  // Store accumulator into memory if address is valid.
+  if (address >= 0 && address < MEMORY_SIZE) {
+    Memory[address] = Index_Registers[reg];
+  }
+}
+
+/**
  * Loads stackpointer from memory.
  *
  * @param id method for retrieving address.
@@ -1512,7 +1553,7 @@ void Group_1(BYTE opcode) {
     case 0x3E:
     case 0x4E:
     case 0x5E:
-      load_register(id, REGISTER_X);
+      load_index_register(id, REGISTER_X);
       break;
 
     // STOX
@@ -1521,7 +1562,7 @@ void Group_1(BYTE opcode) {
     case 0xDC:
     case 0xEC:
     case 0xFC:
-      store_register(id, REGISTER_X);
+      store_index_register(id, REGISTER_X);
       break;
 
     // DECX - Decrements register X
@@ -1541,7 +1582,7 @@ void Group_1(BYTE opcode) {
     case 0x3F:
     case 0x4F:
     case 0x5F:
-      load_register(id, REGISTER_Y);
+      load_index_register(id, REGISTER_Y);
       break;
 
     // STOY
@@ -1550,7 +1591,7 @@ void Group_1(BYTE opcode) {
     case 0xDD:
     case 0xED:
     case 0xFD:
-      store_register(id, REGISTER_Y);
+      store_index_register(id, REGISTER_Y);
       break;
 
     // CAY - Transfers accumulator to register Y
