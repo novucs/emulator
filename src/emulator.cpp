@@ -1471,10 +1471,34 @@ void rti() {
   Registers[REGISTER_A] = Memory[++StackPointer];
 }
 
-/* MOVE - */
-void move() {}
+/* MOVE - Transfers from one register to another. */
+void move_aa() {}
+void move_ab() { Registers[REGISTER_A] = Registers[REGISTER_B]; }
+void move_al() { Registers[REGISTER_A] = Registers[REGISTER_L]; }
+void move_ah() { Registers[REGISTER_A] = Registers[REGISTER_H]; }
+void move_am() { Registers[REGISTER_A] = Registers[REGISTER_M]; }
+void move_ba() { Registers[REGISTER_B] = Registers[REGISTER_A]; }
+void move_bb() {}
+void move_bl() { Registers[REGISTER_B] = Registers[REGISTER_L]; }
+void move_bh() { Registers[REGISTER_B] = Registers[REGISTER_H]; }
+void move_bm() { Registers[REGISTER_B] = Registers[REGISTER_M]; }
+void move_la() { Registers[REGISTER_L] = Registers[REGISTER_A]; }
+void move_lb() { Registers[REGISTER_L] = Registers[REGISTER_B]; }
+void move_ll() {}
+void move_lh() { Registers[REGISTER_L] = Registers[REGISTER_H]; }
+void move_lm() { Registers[REGISTER_L] = Registers[REGISTER_M]; }
+void move_ha() { Registers[REGISTER_H] = Registers[REGISTER_A]; }
+void move_hb() { Registers[REGISTER_H] = Registers[REGISTER_B]; }
+void move_hl() { Registers[REGISTER_H] = Registers[REGISTER_L]; }
+void move_hh() {}
+void move_hm() { Registers[REGISTER_H] = Registers[REGISTER_M]; }
+void move_ma() { Registers[REGISTER_M] = Registers[REGISTER_A]; }
+void move_mb() { Registers[REGISTER_M] = Registers[REGISTER_B]; }
+void move_ml() { Registers[REGISTER_M] = Registers[REGISTER_L]; }
+void move_mh() { Registers[REGISTER_M] = Registers[REGISTER_H]; }
+void move_mm() {}
 
-void (*operations[256])() = {
+void (*operations[])() = {
   nop, decx, incx, decy, incy, clc, stc, cli,
   sti, nop, ldaa_imm, ldab_imm, lx, lx, ldx_imm, ldy_imm,
   jmp, jcc, jcs, jne, jeq, jmi, jpl, jhi,
@@ -1488,15 +1512,15 @@ void (*operations[256])() = {
   lods_abs_y, adc_am, sbc_am, add_am, sub_am, cmp_am, or_am, and_am,
   xor_am, bit_am, ldaa_indir_x, ldab_indir_x, swi, rti, ldx_indir_x, ldy_indir_x,
   lods_indir, adc_bl, sbc_bl, add_bl, sub_bl, cmp_bl, or_bl, and_bl,
-  xor_bl, bit_bl, stos_abs, move, move, move, move, move,
+  xor_bl, bit_bl, stos_abs, move_aa, move_ba, move_la, move_ha, move_ma,
   lods_indir_x, adc_bh, sbc_bh, add_bh, sub_bh, cmp_bh, or_bh, and_bh,
-  xor_bh, bit_bh, stos_abs_x, move, move, move, move, move,
+  xor_bh, bit_bh, stos_abs_x, move_ab, move_bb, move_lb, move_hb, move_mb,
   nop, adc_bm, sbc_bm, add_bm, sub_bm, cmp_bm, or_bm, and_bm,
-  xor_bm, bit_bm, stos_abs_y, move, move, move, move, move,
+  xor_bm, bit_bm, stos_abs_y, move_al, move_bl, move_ll, move_hl, move_ml,
   nop, nop, nop, sbia, sbib, cpia, cpib, oria,
-  orib, nop, stos_indir, move, move, move, move, move,
+  orib, nop, stos_indir, move_ah, move_bh, move_lh, move_hh, move_mh,
   inc_abs, dec_abs, rrc_abs, rlc_abs, sal_abs, sar_abs, lsr_abs, com_abs,
-  rol_abs, rr_abs, stos_indir_x, move, move, move, move, move,
+  rol_abs, rr_abs, stos_indir_x, move_am, move_bm, move_lm, move_hm, move_mm,
   inc_abs_x, dec_abs_x, rrc_abs_x, rlc_abs_x, sal_abs_x, sar_abs_x, lsr_abs_x, com_abs_x,
   rol_abs_x, rr_abs_x, stora_abs, storb_abs, stox_abs, stoy_abs, push_a, pop_a,
   inc_abs_y, dec_abs_y, rrc_abs_y, rlc_abs_y, sal_abs_y, sar_abs_y, lsr_abs_y, com_abs_y,
@@ -1509,65 +1533,8 @@ void (*operations[256])() = {
   sbcp, xchg_al, stora_indir_x, storb_indir_x, stox_indir_x, stoy_indir_x, push_h, pop_h
 };
 
-void Group_1(BYTE opcode) {
-  operations[opcode]();
-}
-
-void Group_2_Move(BYTE opcode) {
-  BYTE source = opcode >> 4;
-  BYTE destination = opcode & 0x0F;
-  int destReg;
-  int sourceReg;
-
-  switch (source) {
-    case 0x06:
-      sourceReg = REGISTER_A;
-      break;
-    case 0x07:
-      sourceReg = REGISTER_B;
-      break;
-    case 0x08:
-      sourceReg = REGISTER_L;
-      break;
-    case 0x09:
-      sourceReg = REGISTER_H;
-      break;
-    case 0x0A:
-      sourceReg = REGISTER_M;
-      break;
-  }
-
-  switch (destination) {
-    case 0x0B:
-      destReg = REGISTER_A;
-      break;
-    case 0x0C:
-      destReg = REGISTER_B;
-      break;
-    case 0x0D:
-      destReg = REGISTER_L;
-      break;
-    case 0x0E:
-      destReg = REGISTER_H;
-      break;
-    case 0x0F:
-      destReg = REGISTER_M;
-      break;
-  }
-
-  Registers[destReg] = Registers[sourceReg];
-}
-
 void execute(BYTE opcode) {
-  if (((opcode >= 0x6B) && (opcode <= 0x6F)) ||
-      ((opcode >= 0x7B) && (opcode <= 0x7F)) ||
-      ((opcode >= 0x8B) && (opcode <= 0x8F)) ||
-      ((opcode >= 0x9B) && (opcode <= 0x9F)) ||
-      ((opcode >= 0xAB) && (opcode <= 0xAF))) {
-    Group_2_Move(opcode);
-  } else {
-    Group_1(opcode);
-  }
+  operations[opcode]();
 }
 
 void emulate() {
