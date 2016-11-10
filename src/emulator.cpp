@@ -360,18 +360,15 @@ char opcode_mneumonics[][14] = {
 //                           Simulator/Emulator (Start)                       //
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Gets the next instruction.
+ */
 BYTE fetch() {
-  BYTE byte = 0;
-
-  if (ProgramCounter >= 0 && ProgramCounter <= MEMORY_SIZE) {
-    memory_in_range = true;
-    byte = Memory[ProgramCounter];
-    ProgramCounter++;
-  } else {
+  if (ProgramCounter < 0 || ProgramCounter > MEMORY_SIZE)
     memory_in_range = false;
-  }
-
-  return byte;
+  else
+    return Memory[ProgramCounter++];
+  return 0;
 }
 
 /**
@@ -380,13 +377,10 @@ BYTE fetch() {
  * @param data the register value.
  */
 void set_flag_z(BYTE data) {
-  if (data == 0) {
-    // Set the zero flag.
+  if (data == 0)
     Flags = Flags | FLAG_Z;
-  } else {
-    // Clear the zero flag.
+  else
     Flags = Flags & (0xFF - FLAG_Z);
-  }
 }
 
 /**
@@ -395,13 +389,10 @@ void set_flag_z(BYTE data) {
  * @param data the register value.
  */
 void set_flag_n(BYTE data) {
-  if ((data & 0x80) == 0x80) {
-    // Set the negative flag.
+  if ((data & 0x80) == 0x80)
     Flags = Flags | FLAG_N;
-  } else {
-    // Clear the negative flag.
+  else
     Flags = Flags & (0xFF - FLAG_N);
-  }
 }
 
 /**
@@ -410,13 +401,10 @@ void set_flag_n(BYTE data) {
  * @param data the register value.
  */
 void set_flag_c(WORD data) {
-  if (data >= 0x100) {
-    // Set the carry flag.
+  if (data >= 0x100)
     Flags = Flags | FLAG_C;
-  } else {
-    // Clear the carry flag.
+  else
     Flags = Flags & (0xFF - FLAG_C);
-  }
 }
 
 /**
