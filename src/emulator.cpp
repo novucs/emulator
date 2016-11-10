@@ -363,7 +363,7 @@ char opcode_mneumonics[][14] = {
 BYTE fetch() {
   BYTE byte = 0;
 
-  if ((ProgramCounter >= 0) && (ProgramCounter <= MEMORY_SIZE)) {
+  if (ProgramCounter >= 0 && ProgramCounter <= MEMORY_SIZE) {
     memory_in_range = true;
     byte = Memory[ProgramCounter];
     ProgramCounter++;
@@ -379,34 +379,47 @@ BYTE fetch() {
 // interrupt flag i
 // negative flag n
 
-void set_flag_z(BYTE inReg) {
-  if (inReg == 0) {
+/**
+ * Updates the zero flag depending on the contents of a register.
+ *
+ * @param data the register value.
+ */
+void set_flag_z(BYTE data) {
+  if (data == 0) {
+    // Set the zero flag.
     Flags = Flags | FLAG_Z;
   } else {
+    // Clear the zero flag.
     Flags = Flags & (0xFF - FLAG_Z);
   }
 }
 
-void set_flag_n(BYTE inReg) {
-  if ((inReg & 0x80) == 0x80) {
+/**
+ * Updates the negative flag depending on the contents of a register.
+ *
+ * @param data the register value.
+ */
+void set_flag_n(BYTE data) {
+  if ((data & 0x80) == 0x80) {
+    // Set the negative flag.
     Flags = Flags | FLAG_N;
   } else {
+    // Clear the negative flag.
     Flags = Flags & (0xFF - FLAG_N);
   }
-
-  // if ((reg & 0x80) != 0) {
-  //   Flags = Flags | FLAG_N;
-  // } else {
-  //   Flags = Flags & (0xFF - FLAG_N);
-  // }
 }
 
-void set_flag_c(WORD inReg) {
-  if (inReg >= 0x100) {
-    // Set carry flag
+/**
+ * Updates the carry flag depending on the contents of a register.
+ *
+ * @param data the register value.
+ */
+void set_flag_c(WORD data) {
+  if (data >= 0x100) {
+    // Set the carry flag.
     Flags = Flags | FLAG_C;
   } else {
-    // Clear carry flag
+    // Clear the carry flag.
     Flags = Flags & (0xFF - FLAG_C);
   }
 }
@@ -422,78 +435,76 @@ void set_flags_znc(WORD inReg) {
   set_flag_z((BYTE) inReg);
 }
 
+/**
+ * Forms a memory address by joining two bytes.
+ *
+ * @param higher the higher byte.
+ * @param lower  the lower byte.
+ */
 WORD join_address(BYTE higher, BYTE lower) {
-  return (WORD) ((WORD) higher << 8) + lower;
+  return (higher << 8) + lower;
+}
+
+/**
+ * Fetch an address using absolute addressing.
+ */
+WORD fetch_address_abs() {
+  BYTE higher = fetch();
+  BYTE lower = fetch();
+  return join_address(higher, lower);
+}
+
+/**
+ * Fetch an address using indexed absolute addressing (X).
+ */
+WORD fetch_address_abs_x() {
+  return fetch_address_abs() + Index_Registers[REGISTER_X];
+}
+
+/**
+ * Fetch an address using indexed absolute addressing (Y).
+ */
+WORD fetch_address_abs_y() {
+  return fetch_address_abs() + Index_Registers[REGISTER_Y];
+}
+
+/**
+ * Fetch an address using indirect addressing.
+ */
+WORD fetch_address_indir() {
+  WORD address = fetch_address_abs();
+  return join_address(Memory[address], Memory[address + 1]);
+}
+
+/**
+ * Fetch an address using indexed indirect addressing (X).
+ */
+WORD fetch_address_indir_x() {
+  return fetch_address_indir() + Index_Registers[REGISTER_X];
 }
 
 WORD fetch_address(int id) {
-  BYTE HB = fetch();
-  BYTE LB = fetch();
-  WORD address = join_address(HB, LB);
+  WORD address;
 
   switch (id) {
     case 1:
+      address = fetch_address_abs();
       break;
     case 2:
-      address += Index_Registers[REGISTER_X];
+      address = fetch_address_abs_x();
       break;
     case 3:
-      address += Index_Registers[REGISTER_Y];
+      address = fetch_address_abs_y();
       break;
     case 4:
-      HB = Memory[address];
-      LB = Memory[address + 1];
-      address = join_address(HB, LB);
+      address = fetch_address_indir();
       break;
     case 5:
-      HB = Memory[address];
-      LB = Memory[address + 1];
-      address = join_address(HB, LB) + Index_Registers[REGISTER_X];
+      address = fetch_address_indir_x();
       break;
   }
 
   return address;
-}
-
-/**
- * Loads register from memory.
- *
- * @param id  method for retrieving address.
- * @param reg the register to use.
- */
-void load_register(int id, int reg) {
-  // ID 0 does not require an address.
-  if (id == 0) {
-    Registers[reg] = fetch();
-    return;
-  }
-
-  // Fetch the address.
-  WORD address = fetch_address(id);
-
-  // Load memory into accumulator.
-  if (address >= 0 && address < MEMORY_SIZE) {
-    Registers[reg] = Memory[address];
-  }
-}
-
-/**
- * Saves register into memory.
- *
- * @param id  method for retrieving address.
- * @param reg the register to use.
- */
-void save_register(int id, int reg) {
-  // Convert ID to LDAA/LDAB format for reusing the address fetching function.
-  id -= 10;
-
-  // Fetch the address.
-  WORD address = fetch_address(id);
-
-  // Store accumulator into memory if address is valid.
-  if (address >= 0 && address < MEMORY_SIZE) {
-    Memory[address] = Registers[reg];
-  }
 }
 
 /**
@@ -503,13 +514,13 @@ void save_register(int id, int reg) {
  * @param reg         the register to add.
  */
 void adc(int accumulator, int reg) {
-  WORD answer = (WORD) Registers[accumulator] + (WORD) Registers[reg];
+  WORD result = Registers[accumulator] + Registers[reg];
   if ((Flags & FLAG_C) != 0) {
-    answer++;
+    result++;
   }
 
-  Registers[accumulator] = (BYTE) answer;
-  set_flags_znc(answer);
+  Registers[accumulator] = result;
+  set_flags_znc(result);
 }
 
 /**
@@ -519,13 +530,13 @@ void adc(int accumulator, int reg) {
  * @param reg         the register to subtract.
  */
 void sbc(int accumulator, int reg) {
-  WORD answer = (WORD) Registers[accumulator] - (WORD) Registers[reg];
-  if ((Flags & FLAG_C) != 0) {
-    answer--;
-  }
+  WORD result = Registers[accumulator] - Registers[reg];
 
-  Registers[accumulator] = (BYTE) answer;
-  set_flags_znc(answer);
+  if (Flags & FLAG_C != 0)
+    result--;
+
+  Registers[accumulator] = result;
+  set_flags_znc(result);
 }
 
 /**
@@ -535,9 +546,9 @@ void sbc(int accumulator, int reg) {
  * @param reg         the register to add.
  */
 void add(int accumulator, int reg) {
-  WORD answer = (WORD) Registers[accumulator] + (WORD) Registers[reg];
-  Registers[accumulator] = (BYTE) answer;
-  set_flags_znc(answer);
+  WORD result = Registers[accumulator] + Registers[reg];
+  Registers[accumulator] = result;
+  set_flags_znc(result);
 }
 
 /**
@@ -547,9 +558,9 @@ void add(int accumulator, int reg) {
  * @param reg         the register to subtract.
  */
 void sub(int accumulator, int reg) {
-  WORD answer = (WORD) Registers[accumulator] - (WORD) Registers[reg];
-  Registers[accumulator] = (BYTE) answer;
-  set_flags_znc(answer);
+  WORD result = Registers[accumulator] - Registers[reg];
+  Registers[accumulator] = result;
+  set_flags_znc(result);
 }
 
 /**
@@ -559,8 +570,8 @@ void sub(int accumulator, int reg) {
  * @param reg         the register to compare.
  */
 void cmp(int accumulator, int reg) {
-  WORD answer = (WORD) Registers[accumulator] - (WORD) Registers[reg];
-  set_flags_znc(answer);
+  WORD result = Registers[accumulator] - Registers[reg];
+  set_flags_znc(result);
 }
 
 /**
@@ -606,144 +617,153 @@ void _xor(int accumulator, int reg) {
  * @param reg         the register.
  */
 void _bit(int accumulator, int reg) {
-  BYTE answer = Registers[accumulator] & Registers[reg];
-  set_flag_z(answer);
-  set_flag_n(answer);
+  BYTE result = Registers[accumulator] & Registers[reg];
+  set_flag_z(result);
+  set_flag_n(result);
 }
 
+/**
+ * Subtracts data from accumulator with carry.
+ *
+ * @param accumulator the accumulator to subtract from.
+ */
 void sbi_accumulator(int accumulator) {
-  WORD data = ((WORD) fetch() - (WORD) Registers[accumulator]);
+  WORD result = fetch() - Registers[accumulator];
 
-  if (Flags & FLAG_C != 0) {
-    data--;
-  }
+  if (Flags & FLAG_C != 0)
+    result--;
 
-  set_flags_znc(data);
-  Registers[accumulator] = (BYTE) data;
+  set_flags_znc(result);
+  Registers[accumulator] = result;
 }
 
+/**
+ * Data bitwise inclusive or with accumulator.
+ *
+ * @param accumulator the accumulator to use.
+ */
 void ori_accumulator(int accumulator) {
-  BYTE data = Registers[accumulator] |= fetch();
-  set_flag_n(data);
-  set_flag_z(data);
+  BYTE result = Registers[accumulator] |= fetch();
+  set_flag_n(result);
+  set_flag_z(result);
 }
 
-void inc_memory(int id) {
-  WORD address = fetch_address(id);
-  if (address >= 0 && address < MEMORY_SIZE) {
-    Memory[address]++;
-    set_flag_n(Memory[address]);
-    set_flag_z(Memory[address]);
-  }
+/**
+ * Increment memory.
+ *
+ * @param address the memory address.
+ */
+void inc_memory(WORD address) {
+  BYTE result = Memory[address]++;
+  set_flag_n(result);
+  set_flag_z(result);
 }
 
-void dec_memory(int id) {
-  WORD address = fetch_address(id);
-  if (address >= 0 && address < MEMORY_SIZE) {
-    Memory[address]--;
-    set_flag_n(Memory[address]);
-    set_flag_z(Memory[address]);
-  }
+/**
+ * Decrement memory.
+ *
+ * @param address the memory address.
+ */
+void dec_memory(WORD address) {
+  BYTE result = Memory[address]--;
+  set_flag_n(result);
+  set_flag_z(result);
 }
 
-void rrc_memory(int id) {
-  // Get the address.
-  WORD address = fetch_address(id);
-
-  // Do nothing if address fetched is out of bounds.
-	if (address < 0 || address >= MEMORY_SIZE) {
-    return;
-  }
-
+/**
+ * Rotates memory right through carry.
+ *
+ * @param address the memory address.
+ */
+void rrc_memory(WORD address) {
   // Rotate memory to the right.
-  BYTE data = Memory[address] >> 1;
+  BYTE result = Memory[address] >> 1;
 
-	if (Flags & FLAG_C != 0) {
-    data += 128;
-  }
+	if (Flags & FLAG_C != 0)
+    result += 128;
 
-  // Set the carry flag.
-	if (Memory[address] % 2 == 0) {
+  // Update the carry flag.
+	if (Memory[address] % 2 == 0)
 		Flags = Flags & (0xFF - FLAG_C);
-	} else {
+	else
 		Flags = Flags | FLAG_C;
-	}
 
   // Update memory and set negative and zero flags.
-  Memory[address] = data;
-  set_flag_n(Memory[address]);
-  set_flag_z(Memory[address]);
+  Memory[address] = result;
+  set_flag_n(result);
+  set_flag_z(result);
 }
 
+/**
+ * Rotates accumulator right through carry.
+ *
+ * @param accumulator the accumulator to use.
+ */
 void rrc_accumulator(int accumulator) {
   // Rotate accumulator to the right.
-  BYTE data = Registers[accumulator] >> 1;
+  BYTE result = Registers[accumulator] >> 1;
 
-	if (Flags & FLAG_C != 0) {
-    data += 128;
-  }
+	if (Flags & FLAG_C != 0)
+    result += 128;
 
-  // Set the carry flag.
-	if (Registers[accumulator] % 2 == 0) {
+  // Update the carry flag.
+	if (Registers[accumulator] % 2 == 0)
 		Flags = Flags & (0xFF - FLAG_C);
-	} else {
+	else
 		Flags = Flags | FLAG_C;
-	}
 
   // Update accumulator and set negative and zero flags.
-  Registers[accumulator] = data;
-  set_flag_n(Registers[accumulator]);
-  set_flag_z(Registers[accumulator]);
+  Registers[accumulator] = result;
+  set_flag_n(result);
+  set_flag_z(result);
 }
 
-void rlc_memory(int id) {
-  // Get the address.
-  WORD address = fetch_address(id);
-
-  // Do nothing if address fetched is out of bounds.
-	if (address < 0 && address >= MEMORY_SIZE) {
-    return;
-  }
-
+/**
+ * Rotates memory left through carry.
+ *
+ * @param address the memory address.
+ */
+void rlc_memory(WORD address) {
   // Rotate memory to the left.
-  BYTE data = Memory[address] << 1;
+  BYTE result = Memory[address] << 1;
 
-	if ((Flags & FLAG_C) != 0) {
-    data += 1;
-	}
+	if (Flags & FLAG_C != 0)
+    result += 1;
 
-  // Set the carry flag.
-	if (Memory[address] < 128) {
+  // Update the carry flag.
+	if (Memory[address] < 128)
 		Flags = Flags & (0xFF - FLAG_C);
-	} else {
+  else
 		Flags = Flags | FLAG_C;
-	}
 
   // Update accumulator and set negative and zero flags.
-  Memory[address] = data;
-  set_flag_n(Memory[address]);
-  set_flag_z(Memory[address]);
+  Memory[address] = result;
+  set_flag_n(result);
+  set_flag_z(result);
 }
 
+/**
+ * Rotates accumulator right through carry.
+ *
+ * @param accumulator the accumulator to use.
+ */
 void rlc_accumulator(int accumulator) {
   // Rotate accumulator to the left.
-  BYTE data = Registers[accumulator] << 1;
+  BYTE result = Registers[accumulator] << 1;
 
-	if ((Flags & FLAG_C) != 0) {
-    data += 1;
-	}
+	if (Flags & FLAG_C != 0)
+    result += 1;
 
-  // Set the carry flag.
-	if (Registers[accumulator] < 128) {
+  // Update the carry flag.
+	if (Registers[accumulator] < 128)
 		Flags = Flags & (0xFF - FLAG_C);
-	} else {
+	else
 		Flags = Flags | FLAG_C;
-	}
 
   // Update accumulator and set negative and zero flags.
-  Registers[accumulator] = data;
-  set_flag_n(Registers[accumulator]);
-  set_flag_z(Registers[accumulator]);
+  Registers[accumulator] = result;
+  set_flag_n(result);
+  set_flag_z(result);
 }
 
 void sal_memory(int id) {
@@ -1046,358 +1066,378 @@ void Group_1(BYTE opcode) {
   int id = opcode >> 4;
 
   switch (opcode) {
-    // LDAA
-    case 0x0A:
-    case 0x1A:
-    case 0x2A:
-    case 0x3A:
-    case 0x4A:
-    case 0x5A:
-      load_register(id, REGISTER_A);
+    /* LDAA - Loads memory into accumulator A. */
+    case 0x0A: // Immediate addressing
+      Registers[REGISTER_A] = fetch();
+      break;
+    case 0x1A: // Absolute addressing
+      Registers[REGISTER_A] = Memory[fetch_address_abs()];
+      break;
+    case 0x2A: // Indexed absolute addressing (X)
+      Registers[REGISTER_A] = Memory[fetch_address_abs_x()];
+      break;
+    case 0x3A: // Indexed absolute addressing (Y)
+      Registers[REGISTER_A] = Memory[fetch_address_abs_y()];
+      break;
+    case 0x4A: // Indirect addressing
+      Registers[REGISTER_A] = Memory[fetch_address_indir()];
+      break;
+    case 0x5A: // Indexed indirect addressing (X)
+      Registers[REGISTER_A] = Memory[fetch_address_indir_x()];
       break;
 
-    // LDAB
-    case 0x0B:
-    case 0x1B:
-    case 0x2B:
-    case 0x3B:
-    case 0x4B:
-    case 0x5B:
-      load_register(id, REGISTER_B);
+    /* LDAB - Loads memory into accumulator B. */
+    case 0x0B: // Immediate addressing
+      Registers[REGISTER_B] = fetch();
+      break;
+    case 0x1B: // Absolute addressing
+      Registers[REGISTER_B] = Memory[fetch_address_abs()];
+      break;
+    case 0x2B: // Indexed absolute addressing (X)
+      Registers[REGISTER_B] = Memory[fetch_address_abs_x()];
+      break;
+    case 0x3B: // Indexed absolute addressing (Y)
+      Registers[REGISTER_B] = Memory[fetch_address_abs_y()];
+      break;
+    case 0x4B: // Indirect addressing
+      Registers[REGISTER_B] = Memory[fetch_address_indir()];
+      break;
+    case 0x5B: // Indexed indirect addressing (X)
+      Registers[REGISTER_B] = Memory[fetch_address_indir_x()];
       break;
 
-    // STORA
-    case 0xBA:
-    case 0xCA:
-    case 0xDA:
-    case 0xEA:
-    case 0xFA:
-      save_register(id, REGISTER_A);
+    /* STORA - Stores accumulator A into memory. */
+    case 0xBA: // Absolute addressing
+      Memory[fetch_address_abs()] = Registers[REGISTER_A];
+      break;
+    case 0xCA: // Indexed absolute addressing (X)
+      Memory[fetch_address_abs_x()] = Registers[REGISTER_A];
+      break;
+    case 0xDA: // Indexed absolute addressing (Y)
+      Memory[fetch_address_abs_y()] = Registers[REGISTER_A];
+      break;
+    case 0xEA: // Indirect addressing
+      Memory[fetch_address_indir()] = Registers[REGISTER_A];
+      break;
+    case 0xFA: // Indexed indirect addressing (X)
+      Memory[fetch_address_indir_x()] = Registers[REGISTER_A];
       break;
 
-    // STORB
-    case 0xBB:
-    case 0xCB:
-    case 0xDB:
-    case 0xEB:
-    case 0xFB:
-      save_register(id, REGISTER_B);
+    /* STORB - Stores accumulator B into memory. */
+    case 0xBB: // Absolute addressing
+      Memory[fetch_address_abs()] = Registers[REGISTER_B];
+      break;
+    case 0xCB: // Indexed absolute addressing (X)
+      Memory[fetch_address_abs_x()] = Registers[REGISTER_B];
+      break;
+    case 0xDB: // Indexed absolute addressing (Y)
+      Memory[fetch_address_abs_y()] = Registers[REGISTER_B];
+      break;
+    case 0xEB: // Indirect addressing
+      Memory[fetch_address_indir()] = Registers[REGISTER_B];
+      break;
+    case 0xFB: // Indexed indirect addressing (X)
+      Memory[fetch_address_indir_x()] = Registers[REGISTER_B];
       break;
 
-    // ADC - Register added to accumulator with carry
-    case 0x31:
+    /* ADC - Adds register to accumulator with carry. */
+    case 0x31: // A + L
       adc(REGISTER_A, REGISTER_L);
       break;
-    case 0x41:
+    case 0x41: // A + H
       adc(REGISTER_A, REGISTER_H);
       break;
-    case 0x51:
+    case 0x51: // A + M
       adc(REGISTER_A, REGISTER_M);
       break;
-    case 0x61:
+    case 0x61: // B + L
       adc(REGISTER_B, REGISTER_L);
       break;
-    case 0x71:
+    case 0x71: // B + H
       adc(REGISTER_B, REGISTER_H);
       break;
-    case 0x81:
+    case 0x81: // B + M
       adc(REGISTER_B, REGISTER_M);
       break;
 
-    // SBC - Register subtracted from accumulator with carry
-    case 0x32:
+    /* SBC - Subtracts register from accumulator with carry. */
+    case 0x32: // A - L
       sbc(REGISTER_A, REGISTER_L);
       break;
-    case 0x42:
+    case 0x42: // A - H
       sbc(REGISTER_A, REGISTER_H);
       break;
-    case 0x52:
+    case 0x52: // A - M
       sbc(REGISTER_A, REGISTER_M);
       break;
-    case 0x62:
+    case 0x62: // B - L
       sbc(REGISTER_B, REGISTER_L);
       break;
-    case 0x72:
+    case 0x72: // B - H
       sbc(REGISTER_B, REGISTER_H);
       break;
-    case 0x82:
+    case 0x82: // B - M
       sbc(REGISTER_B, REGISTER_M);
       break;
 
-    // ADD - Register added to accumulator
-    case 0x33:
+    /* ADD - Adds register to accumulator. */
+    case 0x33: // A + L
       add(REGISTER_A, REGISTER_L);
       break;
-    case 0x43:
+    case 0x43: // A + H
       add(REGISTER_A, REGISTER_H);
       break;
-    case 0x53:
+    case 0x53: // A + M
       add(REGISTER_A, REGISTER_M);
       break;
-    case 0x63:
+    case 0x63: // B + L
       add(REGISTER_B, REGISTER_L);
       break;
-    case 0x73:
+    case 0x73: // B + H
       add(REGISTER_B, REGISTER_H);
       break;
-    case 0x83:
+    case 0x83: // B + M
       add(REGISTER_B, REGISTER_M);
       break;
 
-    // SUB - Register subtracted from accumulator
-    case 0x34:
+    /* SUB - Subtracts register from accumulator. */
+    case 0x34: // A - L
       sub(REGISTER_A, REGISTER_L);
       break;
-    case 0x44:
+    case 0x44: // A - H
       sub(REGISTER_A, REGISTER_H);
       break;
-    case 0x54:
+    case 0x54: // A - M
       sub(REGISTER_A, REGISTER_M);
       break;
-    case 0x64:
+    case 0x64: // B - L
       sub(REGISTER_B, REGISTER_L);
       break;
-    case 0x74:
+    case 0x74: // B - H
       sub(REGISTER_B, REGISTER_H);
       break;
-    case 0x84:
+    case 0x84: // B - M
       sub(REGISTER_B, REGISTER_M);
       break;
 
-    // CMP - Register compared to accumulator
-    case 0x35:
+    /* CMP - Compares register to accumulator. */
+    case 0x35: // A - L
       cmp(REGISTER_A, REGISTER_L);
       break;
-    case 0x45:
+    case 0x45: // A - H
       cmp(REGISTER_A, REGISTER_H);
       break;
-    case 0x55:
+    case 0x55: // A - M
       cmp(REGISTER_A, REGISTER_M);
       break;
-    case 0x65:
+    case 0x65: // B - L
       cmp(REGISTER_B, REGISTER_L);
       break;
-    case 0x75:
+    case 0x75: // B - H
       cmp(REGISTER_B, REGISTER_H);
       break;
-    case 0x85:
+    case 0x85: // B - M
       cmp(REGISTER_B, REGISTER_M);
       break;
 
-    // OR - Register bitwise inclusive or with accumulator
-    case 0x36:
+    /* OR - Register bitwise inclusive or with accumulator. */
+    case 0x36: // A | L
       _or(REGISTER_A, REGISTER_L);
       break;
-    case 0x46:
+    case 0x46: // A | H
       _or(REGISTER_A, REGISTER_H);
       break;
-    case 0x56:
+    case 0x56: // A | M
       _or(REGISTER_A, REGISTER_M);
       break;
-    case 0x66:
+    case 0x66: // B | L
       _or(REGISTER_B, REGISTER_L);
       break;
-    case 0x76:
+    case 0x76: // B | H
       _or(REGISTER_B, REGISTER_H);
       break;
-    case 0x86:
+    case 0x86: // B | M
       _or(REGISTER_B, REGISTER_M);
       break;
 
-    // AND - Register bitwise and with accumulator
-    case 0x37:
+    /* AND - Register bitwise and with accumulator */
+    case 0x37: // A & L
       _and(REGISTER_A, REGISTER_L);
       break;
-    case 0x47:
+    case 0x47: // A & H
       _and(REGISTER_A, REGISTER_H);
       break;
-    case 0x57:
+    case 0x57: // A & M
       _and(REGISTER_A, REGISTER_M);
       break;
-    case 0x67:
+    case 0x67: // B & L
       _and(REGISTER_B, REGISTER_L);
       break;
-    case 0x77:
+    case 0x77: // B & H
       _and(REGISTER_B, REGISTER_H);
       break;
-    case 0x87:
+    case 0x87: // B & M
       _and(REGISTER_B, REGISTER_M);
       break;
 
-    // XOR - Register bitwise exclusive or with accumulator
-    case 0x38:
+    /* XOR - Register bitwise exclusive or with accumulator. */
+    case 0x38: // A ^ L
       _xor(REGISTER_A, REGISTER_L);
       break;
-    case 0x48:
+    case 0x48: // A ^ H
       _xor(REGISTER_A, REGISTER_H);
       break;
-    case 0x58:
+    case 0x58: // A ^ M
       _xor(REGISTER_A, REGISTER_M);
       break;
-    case 0x68:
+    case 0x68: // B ^ L
       _xor(REGISTER_B, REGISTER_L);
       break;
-    case 0x78:
+    case 0x78: // B ^ H
       _xor(REGISTER_B, REGISTER_H);
       break;
-    case 0x88:
+    case 0x88: // B ^ M
       _xor(REGISTER_B, REGISTER_M);
       break;
 
-    // BIT - Register bit tested with accumulator
-    case 0x39:
+    /* BIT - Register bit tested with accumulator. */
+    case 0x39: // A & L
       _bit(REGISTER_A, REGISTER_L);
       break;
-    case 0x49:
+    case 0x49: // A & H
       _bit(REGISTER_A, REGISTER_H);
       break;
-    case 0x59:
+    case 0x59: // A & M
       _bit(REGISTER_A, REGISTER_M);
       break;
-    case 0x69:
+    case 0x69: // B & L
       _bit(REGISTER_B, REGISTER_L);
       break;
-    case 0x79:
+    case 0x79: // B & H
       _bit(REGISTER_B, REGISTER_H);
       break;
-    case 0x89:
+    case 0x89: // B & M
       _bit(REGISTER_B, REGISTER_M);
       break;
 
-    // SBIA - Data subtracted to accumulator with carry
+    /* SBIA - Data subtracted from accumulator A with carry. */
     case 0x93:
       sbi_accumulator(REGISTER_A);
       break;
 
-    // SBIB - Data subtracted to accumulator with carry
+    /* SBIB - Data subtracted from accumulator B with carry. */
     case 0x94:
       sbi_accumulator(REGISTER_B);
       break;
 
-    // CPIA - Data compared to accumulator
+    /* CPIA - Data compared to accumulator A. */
     case 0x95:
     	set_flags_znc(fetch() - Registers[REGISTER_A]);
       break;
 
-    // CPIB - Data compared to accumulator
+    /* CPIB - Data compared to accumulator B. */
     case 0x96:
     	set_flags_znc(fetch() - Registers[REGISTER_B]);
       break;
 
-    // ORIA - Data bitwise inclusive or with accumulator
+    /* ORIA - Data bitwise inclusive or with accumulator A. */
     case 0x97:
       ori_accumulator(REGISTER_A);
       break;
 
-    // ORIB - Data bitwise inclusive or with accumulator
+    /* ORIB - Data bitwise inclusive or with accumulator B. */
     case 0x98:
       ori_accumulator(REGISTER_B);
       break;
 
-    // INC - Increment memory (abs)
-    case 0xA0:
-      inc_memory(1);
+    /* INC - Increment memory. */
+    case 0xA0: // Absolute addressing
+      inc_memory(fetch_address_abs());
+      break;
+    case 0xB0: // Indexed absolute addressing (X)
+      inc_memory(fetch_address_abs_x());
+      break;
+    case 0xC0: // Indexed absolute addressing (Y)
+      inc_memory(fetch_address_abs_y());
       break;
 
-    // INC - Increment memory (abs X)
-    case 0xB0:
-      inc_memory(2);
-      break;
-
-    // INC - Increment memory (abs Y)
-    case 0xC0:
-      inc_memory(3);
-      break;
-
-    // INCA - Increment accumulator
+    /* INCA - Increment accumulator A. */
     case 0xD0:
       Registers[REGISTER_A]++;
       set_flag_z(Registers[REGISTER_A]);
       set_flag_n(Registers[REGISTER_A]);
       break;
 
-    // INCB - Increment accumulator
+    /* INCB - Increment accumulator B. */
     case 0xE0:
       Registers[REGISTER_B]++;
       set_flag_z(Registers[REGISTER_B]);
       set_flag_n(Registers[REGISTER_B]);
       break;
 
-    // DEC - Decrement memory (abs)
-    case 0xA1:
-      dec_memory(1);
+    /* DEC - Decrement memory. */
+    case 0xA1: // Absolute addressing
+      dec_memory(fetch_address_abs());
+      break;
+    case 0xB1: // Indexed absolute addressing (X)
+      dec_memory(fetch_address_abs_x());
+      break;
+    case 0xC1: // Indexed absolute addressing (Y)
+      dec_memory(fetch_address_abs_y());
       break;
 
-    // DEC - Decrement memory (abs X)
-    case 0xB1:
-      dec_memory(2);
-      break;
-
-    // DEC - Decrement memory (abs Y)
-    case 0xC1:
-      dec_memory(3);
-      break;
-
-    // DECA - Decrement accumulator
+    /* DECA - Decrement accumulator A. */
     case 0xD1:
       Registers[REGISTER_A]--;
       set_flag_z(Registers[REGISTER_A]);
       set_flag_n(Registers[REGISTER_A]);
       break;
 
-    // DECB - Decrement accumulator
+    /* DECB - Decrement accumulator B. */
     case 0xE1:
       Registers[REGISTER_B]--;
       set_flag_z(Registers[REGISTER_B]);
       set_flag_n(Registers[REGISTER_B]);
       break;
 
-    // RRC - Rotate right through carry memory (abs)
-    case 0xA2:
-      rrc_memory(1);
+    /* RRC - Rotate right through carry memory. */
+    case 0xA2: // Absolute addressing
+      rrc_memory(fetch_address_abs());
+      break;
+    case 0xB2: // Indexed absolute addressing (X)
+      rrc_memory(fetch_address_abs_x());
+      break;
+    case 0xC2: // Indexed absolute addressing (Y)
+      rrc_memory(fetch_address_abs_y());
       break;
 
-    // RRC - Rotate right through carry memory (abs X)
-    case 0xB2:
-      rrc_memory(2);
-      break;
-
-    // RRC - Rotate right through carry memory (abs Y)
-    case 0xC2:
-      rrc_memory(3);
-      break;
-
-    // RRCA - Rotate right through carry accumulator
+    /* RRCA - Rotate right through carry accumulator A. */
     case 0xD2:
       rrc_accumulator(REGISTER_A);
       break;
 
-    // RRCB - Rotate right through carry accumulator
+    /* RRCB - Rotate right through carry accumulator B. */
     case 0xE2:
       rrc_accumulator(REGISTER_B);
       break;
 
-    // RLC - Rotate left through carry memory (abs)
-    case 0xA3:
-      rlc_memory(1);
+    /* RRC - Rotate left through carry memory. */
+    case 0xA3: // Absolute addressing
+      rlc_memory(fetch_address_abs());
+      break;
+    case 0xB3: // Indexed absolute addressing (X)
+      rlc_memory(fetch_address_abs_x());
+      break;
+    case 0xC3: // Indexed absolute addressing (Y)
+      rlc_memory(fetch_address_abs_y());
       break;
 
-    // RLC - Rotate left through carry memory (abs X)
-    case 0xB3:
-      rlc_memory(2);
-      break;
-
-    // RLC - Rotate left through carry memory (abs Y)
-    case 0xC3:
-      rlc_memory(3);
-      break;
-
-    // RLCA - Rotate left through carry accumulator
+    /* RLCA - Rotate left through carry accumulator A. */
     case 0xD3:
       rlc_accumulator(REGISTER_A);
       break;
 
-    // RLCB - Rotate left through carry accumulator
+    /* RLCB - Rotate left through carry accumulator B. */
     case 0xE3:
       rlc_accumulator(REGISTER_B);
       break;
