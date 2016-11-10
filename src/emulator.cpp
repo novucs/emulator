@@ -971,25 +971,6 @@ void xchg(int reg1, int reg2) {
 }
 
 /**
- * Jump subroutine.
- */
-void jsr() {
-  WORD address = fetch_address_abs();
-  Memory[StackPointer--] = ProgramCounter >> 8;
-  Memory[StackPointer--] = ProgramCounter;
-  ProgramCounter = address;
-}
-
-/**
- * Return from subroutine.
- */
-void ret() {
-  BYTE higher = Memory[StackPointer++];
-  BYTE lower = Memory[StackPointer++];
-  ProgramCounter = join_address(higher, lower);
-}
-
-/**
  * Performs a jump if the condition is true.
  *
  * @param condition the condition to check.
@@ -1015,888 +996,521 @@ void call(bool condition) {
   }
 }
 
+/* LDAA - Loads memory into accumulator A. */
+void ldaa_imm() { Registers[REGISTER_A] = fetch(); }
+void ldaa_abs() { Registers[REGISTER_A] = Memory[fetch_address_abs()]; }
+void ldaa_abs_x() { Registers[REGISTER_A] = Memory[fetch_address_abs_x()]; }
+void ldaa_abs_y() { Registers[REGISTER_A] = Memory[fetch_address_abs_y()]; }
+void ldaa_indir() { Registers[REGISTER_A] = Memory[fetch_address_indir()]; }
+void ldaa_indir_x() { Registers[REGISTER_A] = Memory[fetch_address_indir_x()]; }
+
+/* LDAB - Loads memory into accumulator B. */
+void ldab_imm() { Registers[REGISTER_B] = fetch(); }
+void ldab_abs() { Registers[REGISTER_B] = Memory[fetch_address_abs()]; }
+void ldab_abs_x() { Registers[REGISTER_B] = Memory[fetch_address_abs_x()]; }
+void ldab_abs_y() { Registers[REGISTER_B] = Memory[fetch_address_abs_y()]; }
+void ldab_indir() { Registers[REGISTER_B] = Memory[fetch_address_indir()]; }
+void ldab_indir_x() { Registers[REGISTER_B] = Memory[fetch_address_indir_x()]; }
+
+/* STORA - Stores accumulator A into memory. */
+void stora_abs() { Memory[fetch_address_abs()] = Registers[REGISTER_A]; }
+void stora_abs_x() { Memory[fetch_address_abs_x()] = Registers[REGISTER_A]; }
+void stora_abs_y() { Memory[fetch_address_abs_y()] = Registers[REGISTER_A]; }
+void stora_indir() { Memory[fetch_address_indir()] = Registers[REGISTER_A]; }
+void stora_indir_x() { Memory[fetch_address_indir_x()] = Registers[REGISTER_A]; }
+
+/* STORB - Stores accumulator B into memory. */
+void storb_abs() { Memory[fetch_address_abs()] = Registers[REGISTER_B]; }
+void storb_abs_x() { Memory[fetch_address_abs_x()] = Registers[REGISTER_B]; }
+void storb_abs_y() { Memory[fetch_address_abs_y()] = Registers[REGISTER_B]; }
+void storb_indir() { Memory[fetch_address_indir()] = Registers[REGISTER_B]; }
+void storb_indir_x() { Memory[fetch_address_indir_x()] = Registers[REGISTER_B]; }
+
+/* ADC - Adds register to accumulator with carry. */
+void adc_al() { adc(REGISTER_A, REGISTER_L); }
+void adc_ah() { adc(REGISTER_A, REGISTER_H); }
+void adc_am() { adc(REGISTER_A, REGISTER_M); }
+void adc_bl() { adc(REGISTER_B, REGISTER_L); }
+void adc_bh() { adc(REGISTER_B, REGISTER_H); }
+void adc_bm() { adc(REGISTER_B, REGISTER_M); }
+
+/* SBC - Subtracts register from accumulator with carry. */
+void sbc_al() { sbc(REGISTER_A, REGISTER_L); }
+void sbc_ah() { sbc(REGISTER_A, REGISTER_H); }
+void sbc_am() { sbc(REGISTER_A, REGISTER_M); }
+void sbc_bl() { sbc(REGISTER_B, REGISTER_L); }
+void sbc_bh() { sbc(REGISTER_B, REGISTER_H); }
+void sbc_bm() { sbc(REGISTER_B, REGISTER_M); }
+
+/* ADD - Adds register to accumulator. */
+void add_al() { add(REGISTER_A, REGISTER_L); }
+void add_ah() { add(REGISTER_A, REGISTER_H); }
+void add_am() { add(REGISTER_A, REGISTER_M); }
+void add_bl() { add(REGISTER_B, REGISTER_L); }
+void add_bh() { add(REGISTER_B, REGISTER_H); }
+void add_bm() { add(REGISTER_B, REGISTER_M); }
+
+/* SUB - Subtracts register from accumulator. */
+void sub_al() { sub(REGISTER_A, REGISTER_L); }
+void sub_ah() { sub(REGISTER_A, REGISTER_H); }
+void sub_am() { sub(REGISTER_A, REGISTER_M); }
+void sub_bl() { sub(REGISTER_B, REGISTER_L); }
+void sub_bh() { sub(REGISTER_B, REGISTER_H); }
+void sub_bm() { sub(REGISTER_B, REGISTER_M); }
+
+/* CMP - Compares register to accumulator. */
+void cmp_al() { cmp(REGISTER_A, REGISTER_L); }
+void cmp_ah() { cmp(REGISTER_A, REGISTER_H); }
+void cmp_am() { cmp(REGISTER_A, REGISTER_M); }
+void cmp_bl() { cmp(REGISTER_B, REGISTER_L); }
+void cmp_bh() { cmp(REGISTER_B, REGISTER_H); }
+void cmp_bm() { cmp(REGISTER_B, REGISTER_M); }
+
+/* OR - Register bitwise inclusive or with accumulator. */
+void or_al() { _or(REGISTER_A, REGISTER_L); }
+void or_ah() { _or(REGISTER_A, REGISTER_H); }
+void or_am() { _or(REGISTER_A, REGISTER_M); }
+void or_bl() { _or(REGISTER_B, REGISTER_L); }
+void or_bh() { _or(REGISTER_B, REGISTER_H); }
+void or_bm() { _or(REGISTER_B, REGISTER_M); }
+
+/* AND - Register bitwise and with accumulator */
+void and_al() { _and(REGISTER_A, REGISTER_L); }
+void and_ah() { _and(REGISTER_A, REGISTER_H); }
+void and_am() { _and(REGISTER_A, REGISTER_M); }
+void and_bl() { _and(REGISTER_B, REGISTER_L); }
+void and_bh() { _and(REGISTER_B, REGISTER_H); }
+void and_bm() { _and(REGISTER_B, REGISTER_M); }
+
+/* XOR - Register bitwise exclusive or with accumulator. */
+void xor_al() { _xor(REGISTER_A, REGISTER_L); }
+void xor_ah() { _xor(REGISTER_A, REGISTER_H); }
+void xor_am() { _xor(REGISTER_A, REGISTER_M); }
+void xor_bl() { _xor(REGISTER_B, REGISTER_L); }
+void xor_bh() { _xor(REGISTER_B, REGISTER_H); }
+void xor_bm() { _xor(REGISTER_B, REGISTER_M); }
+
+/* BIT - Register bit tested with accumulator. */
+void bit_al() { _bit(REGISTER_A, REGISTER_L); }
+void bit_ah() { _bit(REGISTER_A, REGISTER_H); }
+void bit_am() { _bit(REGISTER_A, REGISTER_M); }
+void bit_bl() { _bit(REGISTER_B, REGISTER_L); }
+void bit_bh() { _bit(REGISTER_B, REGISTER_H); }
+void bit_bm() { _bit(REGISTER_B, REGISTER_M); }
+
+/* SBIA - Data subtracted from accumulator A with carry. */
+void sbia() { sbi_accumulator(REGISTER_A); }
+
+/* SBIB - Data subtracted from accumulator B with carry. */
+void sbib() { sbi_accumulator(REGISTER_B); }
+
+/* CPIA - Data compared to accumulator A. */
+void cpia() { set_flags_znc(fetch() - Registers[REGISTER_A]); }
+
+/* CPIB - Data compared to accumulator B. */
+void cpib() { set_flags_znc(fetch() - Registers[REGISTER_B]); }
+
+/* ORIA - Data bitwise inclusive or with accumulator A. */
+void oria() { ori_accumulator(REGISTER_A); }
+
+/* ORIB - Data bitwise inclusive or with accumulator B. */
+void orib() { ori_accumulator(REGISTER_B); }
+
+/* INC - Increment memory. */
+void inc_abs() { inc_memory(fetch_address_abs()); }
+void inc_abs_x() { inc_memory(fetch_address_abs_x()); }
+void inc_abs_y() { inc_memory(fetch_address_abs_y()); }
+
+/* INCA - Increment accumulator A. */
+void inca() {
+  Registers[REGISTER_A]++;
+  set_flag_z(Registers[REGISTER_A]);
+  set_flag_n(Registers[REGISTER_A]);
+}
+
+/* INCB - Increment accumulator B. */
+void incb() {
+  Registers[REGISTER_B]++;
+  set_flag_z(Registers[REGISTER_B]);
+  set_flag_n(Registers[REGISTER_B]);
+}
+
+/* DEC - Decrement memory. */
+void dec_abs() { dec_memory(fetch_address_abs()); }
+void dec_abs_x() { dec_memory(fetch_address_abs_x()); }
+void dec_abs_y() { dec_memory(fetch_address_abs_y()); }
+
+/* DECA - Decrement accumulator A. */
+void deca() {
+  Registers[REGISTER_A]--;
+  set_flag_z(Registers[REGISTER_A]);
+  set_flag_n(Registers[REGISTER_A]);
+}
+
+/* DECB - Decrement accumulator B. */
+void decb() {
+  Registers[REGISTER_B]--;
+  set_flag_z(Registers[REGISTER_B]);
+  set_flag_n(Registers[REGISTER_B]);
+}
+
+/* RRC - Rotate right through carry memory. */
+void rrc_abs() { rrc_memory(fetch_address_abs()); }
+void rrc_abs_x() { rrc_memory(fetch_address_abs_x()); }
+void rrc_abs_y() { rrc_memory(fetch_address_abs_y()); }
+
+/* RRCA - Rotate right through carry accumulator A. */
+void rrca() { rrc_accumulator(REGISTER_A); }
+
+/* RRCB - Rotate right through carry accumulator B. */
+void rrcb() { rrc_accumulator(REGISTER_B); }
+
+/* RLC - Rotate left through carry memory. */
+void rlc_abs() { rlc_memory(fetch_address_abs()); }
+void rlc_abs_x() { rlc_memory(fetch_address_abs_x()); }
+void rlc_abs_y() { rlc_memory(fetch_address_abs_y()); }
+
+/* RLCA - Rotate left through carry accumulator A. */
+void rlca() { rlc_accumulator(REGISTER_A); }
+
+/* RLCB - Rotate left through carry accumulator B. */
+void rlcb() { rlc_accumulator(REGISTER_B); }
+
+/* SAL - Arithmetic shift left memory. */
+void sal_abs() { sal_memory(fetch_address_abs()); }
+void sal_abs_x() { sal_memory(fetch_address_abs_x()); }
+void sal_abs_y() { sal_memory(fetch_address_abs_y()); }
+
+/* SALA - Arithmetic shift left accumulator A. */
+void sala() { sal_accumulator(REGISTER_A); }
+
+/* SALB - Arithmetic shift left accumulator B. */
+void salb() { sal_accumulator(REGISTER_B); }
+
+/* SAR - Arithmetic shift right memory. */
+void sar_abs() { sar_memory(fetch_address_abs()); }
+void sar_abs_x() { sar_memory(fetch_address_abs_x()); }
+void sar_abs_y() { sar_memory(fetch_address_abs_y()); }
+
+/* SARA - Arithmetic shift right accumulator A. */
+void sara() { sar_accumulator(REGISTER_A); }
+
+/* SARB - Arithmetic shift right accumulator B. */
+void sarb() { sar_accumulator(REGISTER_B); }
+
+/* LSR - Shift right memory. */
+void lsr_abs() { lsr_memory(fetch_address_abs()); }
+void lsr_abs_x() { lsr_memory(fetch_address_abs_x()); }
+void lsr_abs_y() { lsr_memory(fetch_address_abs_y()); }
+
+/* LSRA - Shift right accumulator A. */
+void lsra() { lsr_accumulator(REGISTER_A); }
+
+/* LSRB - Shift right accumulator B. */
+void lsrb() { lsr_accumulator(REGISTER_B); }
+
+/* COM - Negate memory. */
+void com_abs() { com_memory(fetch_address_abs()); }
+void com_abs_x() { com_memory(fetch_address_abs_x()); }
+void com_abs_y() { com_memory(fetch_address_abs_y()); }
+
+/* COMA - Negate accumulator A. */
+void coma() { com_accumulator(REGISTER_A); }
+
+/* COMB - Negate accumulator B. */
+void comb() { com_accumulator(REGISTER_B); }
+
+/* ROL - Rotate memory left without carry. */
+void rol_abs() { rol_memory(fetch_address_abs()); }
+void rol_abs_x() { rol_memory(fetch_address_abs_x()); }
+void rol_abs_y() { rol_memory(fetch_address_abs_y()); }
+
+/* ROLA - Rotate accumulator A left without carry. */
+void rola() { rol_accumulator(REGISTER_A); }
+
+/* ROLB - Rotate accumulator B left without carry. */
+void rolb() { rol_accumulator(REGISTER_B); }
+
+/* RR - Rotate memory right without carry. */
+void rr_abs() { rr_memory(fetch_address_abs()); }
+void rr_abs_x() { rr_memory(fetch_address_abs_x()); }
+void rr_abs_y() { rr_memory(fetch_address_abs_y()); }
+
+/* RRA - Rotate accumulator A right without carry. */
+void rra() { rr_accumulator(REGISTER_A); }
+
+/* RRB - Rotate accumulator B right without carry. */
+void rrb() { rr_accumulator(REGISTER_B); }
+
+/* LDX - Loads memory into index register X. */
+void ldx_imm() { Index_Registers[REGISTER_X] = fetch(); }
+void ldx_abs() { Index_Registers[REGISTER_X] = Memory[fetch_address_abs()]; }
+void ldx_abs_x() { Index_Registers[REGISTER_X] = Memory[fetch_address_abs_x()]; }
+void ldx_abs_y() { Index_Registers[REGISTER_X] = Memory[fetch_address_abs_y()]; }
+void ldx_indir() { Index_Registers[REGISTER_X] = Memory[fetch_address_indir()]; }
+void ldx_indir_x() { Index_Registers[REGISTER_X] = Memory[fetch_address_indir_x()]; }
+
+/* STOX - Stores index register X into memory. */
+void stox_abs() { Memory[fetch_address_abs()] = Index_Registers[REGISTER_X]; }
+void stox_abs_x() { Memory[fetch_address_abs_x()] = Index_Registers[REGISTER_X]; }
+void stox_abs_y() { Memory[fetch_address_abs_y()] = Index_Registers[REGISTER_X]; }
+void stox_indir() { Memory[fetch_address_indir()] = Index_Registers[REGISTER_X]; }
+void stox_indir_x() { Memory[fetch_address_indir_x()] = Index_Registers[REGISTER_X]; }
+
+/* DECX - Decrements index register X. */
+void decx() { set_flag_z(--Index_Registers[REGISTER_X]); }
+
+/* INCX - Increments index register X. */
+void incx() { set_flag_z(++Index_Registers[REGISTER_X]); }
+
+/* LDY - Loads memory into index register Y. */
+void ldy_imm() { Index_Registers[REGISTER_Y] = fetch(); }
+void ldy_abs() { Index_Registers[REGISTER_Y] = Memory[fetch_address_abs()]; }
+void ldy_abs_x() { Index_Registers[REGISTER_Y] = Memory[fetch_address_abs_x()]; }
+void ldy_abs_y() { Index_Registers[REGISTER_Y] = Memory[fetch_address_abs_y()]; }
+void ldy_indir() { Index_Registers[REGISTER_Y] = Memory[fetch_address_indir()]; }
+void ldy_indir_x() { Index_Registers[REGISTER_Y] = Memory[fetch_address_indir_x()]; }
+
+/* STOY - Stores index register Y into memory. */
+void stoy_abs() { Memory[fetch_address_abs()] = Index_Registers[REGISTER_Y]; }
+void stoy_abs_x() { Memory[fetch_address_abs_x()] = Index_Registers[REGISTER_Y]; }
+void stoy_abs_y() { Memory[fetch_address_abs_y()] = Index_Registers[REGISTER_Y]; }
+void stoy_indir() { Memory[fetch_address_indir()] = Index_Registers[REGISTER_Y]; }
+void stoy_indir_x() { Memory[fetch_address_indir_x()] = Index_Registers[REGISTER_Y]; }
+
+/* CAY - Transfers accumulator A to index register Y. */
+void cay() {
+  Index_Registers[REGISTER_Y] = Registers[REGISTER_A];
+  set_flag_n(Index_Registers[REGISTER_Y]);
+}
+
+/* MYA - Transfers index register Y to accumulator A. */
+void mya() { Registers[REGISTER_A] = Index_Registers[REGISTER_Y]; }
+
+/* DECY - Decrements index register Y. */
+void decy() { set_flag_z(--Index_Registers[REGISTER_Y]); }
+
+/* INCY - Increments index register Y. */
+void incy() { set_flag_z(++Index_Registers[REGISTER_Y]); }
+
+/* LODS - Loads memory into stackpointer. */
+void lods_imm() { StackPointer = (fetch() << 8) + fetch(); }
+void lods_abs() { load_stackpointer(fetch_address_abs()); }
+void lods_abs_x() { load_stackpointer(fetch_address_abs_x()); }
+void lods_abs_y() { load_stackpointer(fetch_address_abs_y()); }
+void lods_indir() { load_stackpointer(fetch_address_indir()); }
+void lods_indir_x() { load_stackpointer(fetch_address_indir_x()); }
+
+/* STOS - Stores stackpointer into memory. */
+void stos_abs() { save_stackpointer(fetch_address_abs()); }
+void stos_abs_x() { save_stackpointer(fetch_address_abs_x()); }
+void stos_abs_y() { save_stackpointer(fetch_address_abs_y()); }
+void stos_indir() { save_stackpointer(fetch_address_indir()); }
+void stos_indir_x() { save_stackpointer(fetch_address_indir_x()); }
+
+/* CSA - Transfers status register to accumulator A. */
+void csa() { Registers[REGISTER_A] = Flags; }
+
+/* PUSH - Pushes register onto the stack. */
+void push_a() { Memory[StackPointer--] = Registers[REGISTER_A]; }
+void push_b() { Memory[StackPointer--] = Registers[REGISTER_B]; }
+void push_f() { Memory[StackPointer--] = Registers[Flags]; }
+void push_l() { Memory[StackPointer--] = Registers[REGISTER_L]; }
+void push_h() { Memory[StackPointer--] = Registers[REGISTER_H]; }
+
+/* POP - Pop the top of the stack to the register. */
+void pop_a() { Registers[REGISTER_A] = Memory[++StackPointer]; }
+void pop_b() { Registers[REGISTER_B] = Memory[++StackPointer]; }
+void pop_f() { Registers[Flags] = Memory[++StackPointer]; }
+void pop_l() { Registers[REGISTER_L] = Memory[++StackPointer]; }
+void pop_h() { Registers[REGISTER_H] = Memory[++StackPointer]; }
+
+/* LX - Loads memory into register pair. */
+void lx() {
+  Registers[REGISTER_H] = fetch();
+  Registers[REGISTER_L] = fetch();
+}
+
+/* JMP - Loads memory into program counter. */
+void jmp() { ProgramCounter = fetch_address_abs(); }
+
+/* ABA - Adds accumulator B into accumulator A. */
+void aba() {
+  Registers[REGISTER_A] += Registers[REGISTER_B];
+  set_flags_znc(Registers[REGISTER_A]);
+}
+
+/* SBA - Subtracts accumulator B from accumulator A. */
+void sba() {
+  Registers[REGISTER_A] -= Registers[REGISTER_B];
+  set_flags_znc(Registers[REGISTER_A]);
+}
+
+/* AAB - Adds accumulator A into accumulator B. */
+void aab() {
+  Registers[REGISTER_B] += Registers[REGISTER_A];
+  set_flags_znc(Registers[REGISTER_B]);
+}
+
+/* SAB - Subtracts accumulator A from accumulator B. */
+void sab() {
+  Registers[REGISTER_B] -= Registers[REGISTER_A];
+  set_flags_znc(Registers[REGISTER_B]);
+}
+
+/* MVI - Loads memory into register. */
+void mvi_l() { Registers[REGISTER_L] = fetch(); }
+void mvi_h() { Registers[REGISTER_H] = fetch(); }
+
+/* ADCP - Adds register pair into accumulator pair. */
+void adcp() { adc(REGISTER_A, REGISTER_L); }
+
+/* SBCP - Subtracts register pair into accumulator pair. */
+void sbcp() { sbc(REGISTER_A, REGISTER_L); }
+
+/* XCHG - Swaps the registers contents. */
+void xchg_al() { xchg(REGISTER_A, REGISTER_L); }
+
+/* JSR - Jump subroutine. */
+void jsr() {
+  WORD address = fetch_address_abs();
+  Memory[StackPointer--] = ProgramCounter >> 8;
+  Memory[StackPointer--] = ProgramCounter;
+  ProgramCounter = address;
+}
+
+/* RET - Return from subroutine. */
+void ret() {
+  BYTE higher = Memory[StackPointer++];
+  BYTE lower = Memory[StackPointer++];
+  ProgramCounter = join_address(higher, lower);
+}
+
+/* JCC - Jump on carry clear. */
+void jcc() { jump((Flags & FLAG_C) == 0); }
+
+/* JCS - Jump on carry set. */
+void jcs() { jump((Flags & FLAG_C) != 0); }
+
+/* JNE - Jump on result not zero. */
+void jne() { jump((Flags & FLAG_Z) != FLAG_Z); }
+
+/* JEQ - Jump on result equal to zero. */
+void jeq() { jump((Flags & FLAG_Z) == FLAG_Z); }
+
+/* JMI - Jump on negative result. */
+void jmi() { jump((Flags & FLAG_N) != 0); }
+
+/* JPL - Jump on positive result. */
+void jpl() { jump((Flags & FLAG_N) == 0); }
+
+/* JHI - Jump on result same or lower. */
+void jhi() { jump((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0); }
+
+/* JLE - Jump on result higher. */
+void jle() { jump(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z)))); }
+
+/* CCC - Call on carry clear. */
+void ccc() { call((Flags & FLAG_C) != FLAG_C); }
+
+/* CCS - Call on carry set. */
+void ccs() { call((Flags & FLAG_C) == FLAG_C); }
+
+/* CNE - Call on not zero. */
+void cne() { call((Flags & FLAG_Z) != FLAG_Z); }
+
+/* CEQ - Call on result equal to zero. */
+void ceq() { call((Flags & FLAG_Z) != 0); }
+
+/* CMI - Call on negative result. */
+void cmi() { call((Flags & FLAG_N) == FLAG_N); }
+
+/* CPL - Call on positive result. */
+void cpl() { call((Flags & FLAG_N) != FLAG_N); }
+
+/* CHI - Call on result same or lower. */
+void chi() { call((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z))); }
+
+/* CLE - Call on result higher. */
+void cle() { call(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z)))); }
+
+/* CLC - Clear carry flag. */
+void clc() { Flags = Flags & (0xFF - FLAG_C); }
+
+/* STC - Set carry flag. */
+void stc() { Flags = Flags | FLAG_C; }
+
+/* CLI - Clear interrupt flag. */
+void cli() { Flags = Flags & (0xFF - FLAG_I); }
+
+/* STI - Set interrupt flag. */
+void sti() { Flags = Flags | FLAG_I; }
+
+/* NOP - No operation. */
+void nop() {}
+
+/* HLT - Wait for interrupt. */
+void hlt() { halt = true; }
+
+/* SWI - Software interrupt. */
+void swi() {
+  Flags |= FLAG_I;
+  Memory[StackPointer--] = Registers[REGISTER_A];
+  Memory[StackPointer--] = Registers[REGISTER_B];
+  Memory[StackPointer--] = Registers[Flags];
+  Memory[StackPointer--] = Registers[REGISTER_L];
+  Memory[StackPointer--] = Registers[REGISTER_H];
+}
+
+/* RTI - Return from software interrupt. */
+void rti() {
+  Registers[REGISTER_L] = Memory[++StackPointer];
+  Registers[REGISTER_H] = Memory[++StackPointer];
+  Registers[Flags] = Memory[++StackPointer];
+  Registers[REGISTER_B] = Memory[++StackPointer];
+  Registers[REGISTER_A] = Memory[++StackPointer];
+}
+
+/* MOVE - */
+void move() {}
+
+void (*operations[256])() = {
+  nop, decx, incx, decy, incy, clc, stc, cli,
+  sti, nop, ldaa_imm, ldab_imm, lx, lx, ldx_imm, ldy_imm,
+  jmp, jcc, jcs, jne, jeq, jmi, jpl, jhi,
+  jle, nop, ldaa_abs, ldab_abs, mvi_l, mvi_h, ldx_abs, ldy_abs,
+  lods_imm, jsr, ccc, ccs, cne, ceq, cmi, cpl,
+  chi, cle, ldaa_abs_x, ldab_abs_x, nop, hlt, ldx_abs_x, ldy_abs_x,
+  lods_abs, adc_al, sbc_al, add_al, sub_al, cmp_al, or_al, and_al,
+  xor_al, bit_al, ldaa_abs_y, ldab_abs_y, nop, nop, ldx_abs_y, ldy_abs_y,
+  lods_abs_x, adc_ah, sbc_ah, add_ah, sub_ah, cmp_ah, or_ah, and_ah,
+  xor_ah, bit_ah, ldaa_indir, ldab_indir, ret, nop, ldx_indir, ldy_indir,
+  lods_abs_y, adc_am, sbc_am, add_am, sub_am, cmp_am, or_am, and_am,
+  xor_am, bit_am, ldaa_indir_x, ldab_indir_x, swi, rti, ldx_indir_x, ldy_indir_x,
+  lods_indir, adc_bl, sbc_bl, add_bl, sub_bl, cmp_bl, or_bl, and_bl,
+  xor_bl, bit_bl, stos_abs, move, move, move, move, move,
+  lods_indir_x, adc_bh, sbc_bh, add_bh, sub_bh, cmp_bh, or_bh, and_bh,
+  xor_bh, bit_bh, stos_abs_x, move, move, move, move, move,
+  nop, adc_bm, sbc_bm, add_bm, sub_bm, cmp_bm, or_bm, and_bm,
+  xor_bm, bit_bm, stos_abs_y, move, move, move, move, move,
+  nop, nop, nop, sbia, sbib, cpia, cpib, oria,
+  orib, nop, stos_indir, move, move, move, move, move,
+  inc_abs, dec_abs, rrc_abs, rlc_abs, sal_abs, sar_abs, lsr_abs, com_abs,
+  rol_abs, rr_abs, stos_indir_x, move, move, move, move, move,
+  inc_abs_x, dec_abs_x, rrc_abs_x, rlc_abs_x, sal_abs_x, sar_abs_x, lsr_abs_x, com_abs_x,
+  rol_abs_x, rr_abs_x, stora_abs, storb_abs, stox_abs, stoy_abs, push_a, pop_a,
+  inc_abs_y, dec_abs_y, rrc_abs_y, rlc_abs_y, sal_abs_y, sar_abs_y, lsr_abs_y, com_abs_y,
+  rol_abs_y, rr_abs_y, stora_abs_x, storb_abs_x, stox_abs_x, stoy_abs_x, push_b, pop_b,
+  inca, deca, rrca, rlca, sala, sara, lsra, coma,
+  rola, rra, stora_abs_y, storb_abs_y, stox_abs_y, stoy_abs_y, push_f, pop_f,
+  incb, decb, rrcb, rlcb, salb, sarb, lsrb, comb,
+  rolb, rrb, stora_indir, storb_indir, stox_indir, stoy_indir, push_l, pop_l,
+  cay, mya, csa, aba, sba, aab, sab, adcp,
+  sbcp, xchg_al, stora_indir_x, storb_indir_x, stox_indir_x, stoy_indir_x, push_h, pop_h
+};
+
 void Group_1(BYTE opcode) {
-  switch (opcode) {
-    /* LDAA - Loads memory into accumulator A. */
-    case 0x0A: // Immediate addressing
-      Registers[REGISTER_A] = fetch();
-      break;
-    case 0x1A: // Absolute addressing
-      Registers[REGISTER_A] = Memory[fetch_address_abs()];
-      break;
-    case 0x2A: // Indexed absolute addressing (X)
-      Registers[REGISTER_A] = Memory[fetch_address_abs_x()];
-      break;
-    case 0x3A: // Indexed absolute addressing (Y)
-      Registers[REGISTER_A] = Memory[fetch_address_abs_y()];
-      break;
-    case 0x4A: // Indirect addressing
-      Registers[REGISTER_A] = Memory[fetch_address_indir()];
-      break;
-    case 0x5A: // Indexed indirect addressing (X)
-      Registers[REGISTER_A] = Memory[fetch_address_indir_x()];
-      break;
-
-    /* LDAB - Loads memory into accumulator B. */
-    case 0x0B: // Immediate addressing
-      Registers[REGISTER_B] = fetch();
-      break;
-    case 0x1B: // Absolute addressing
-      Registers[REGISTER_B] = Memory[fetch_address_abs()];
-      break;
-    case 0x2B: // Indexed absolute addressing (X)
-      Registers[REGISTER_B] = Memory[fetch_address_abs_x()];
-      break;
-    case 0x3B: // Indexed absolute addressing (Y)
-      Registers[REGISTER_B] = Memory[fetch_address_abs_y()];
-      break;
-    case 0x4B: // Indirect addressing
-      Registers[REGISTER_B] = Memory[fetch_address_indir()];
-      break;
-    case 0x5B: // Indexed indirect addressing (X)
-      Registers[REGISTER_B] = Memory[fetch_address_indir_x()];
-      break;
-
-    /* STORA - Stores accumulator A into memory. */
-    case 0xBA: // Absolute addressing
-      Memory[fetch_address_abs()] = Registers[REGISTER_A];
-      break;
-    case 0xCA: // Indexed absolute addressing (X)
-      Memory[fetch_address_abs_x()] = Registers[REGISTER_A];
-      break;
-    case 0xDA: // Indexed absolute addressing (Y)
-      Memory[fetch_address_abs_y()] = Registers[REGISTER_A];
-      break;
-    case 0xEA: // Indirect addressing
-      Memory[fetch_address_indir()] = Registers[REGISTER_A];
-      break;
-    case 0xFA: // Indexed indirect addressing (X)
-      Memory[fetch_address_indir_x()] = Registers[REGISTER_A];
-      break;
-
-    /* STORB - Stores accumulator B into memory. */
-    case 0xBB: // Absolute addressing
-      Memory[fetch_address_abs()] = Registers[REGISTER_B];
-      break;
-    case 0xCB: // Indexed absolute addressing (X)
-      Memory[fetch_address_abs_x()] = Registers[REGISTER_B];
-      break;
-    case 0xDB: // Indexed absolute addressing (Y)
-      Memory[fetch_address_abs_y()] = Registers[REGISTER_B];
-      break;
-    case 0xEB: // Indirect addressing
-      Memory[fetch_address_indir()] = Registers[REGISTER_B];
-      break;
-    case 0xFB: // Indexed indirect addressing (X)
-      Memory[fetch_address_indir_x()] = Registers[REGISTER_B];
-      break;
-
-    /* ADC - Adds register to accumulator with carry. */
-    case 0x31: // A + L
-      adc(REGISTER_A, REGISTER_L);
-      break;
-    case 0x41: // A + H
-      adc(REGISTER_A, REGISTER_H);
-      break;
-    case 0x51: // A + M
-      adc(REGISTER_A, REGISTER_M);
-      break;
-    case 0x61: // B + L
-      adc(REGISTER_B, REGISTER_L);
-      break;
-    case 0x71: // B + H
-      adc(REGISTER_B, REGISTER_H);
-      break;
-    case 0x81: // B + M
-      adc(REGISTER_B, REGISTER_M);
-      break;
-
-    /* SBC - Subtracts register from accumulator with carry. */
-    case 0x32: // A - L
-      sbc(REGISTER_A, REGISTER_L);
-      break;
-    case 0x42: // A - H
-      sbc(REGISTER_A, REGISTER_H);
-      break;
-    case 0x52: // A - M
-      sbc(REGISTER_A, REGISTER_M);
-      break;
-    case 0x62: // B - L
-      sbc(REGISTER_B, REGISTER_L);
-      break;
-    case 0x72: // B - H
-      sbc(REGISTER_B, REGISTER_H);
-      break;
-    case 0x82: // B - M
-      sbc(REGISTER_B, REGISTER_M);
-      break;
-
-    /* ADD - Adds register to accumulator. */
-    case 0x33: // A + L
-      add(REGISTER_A, REGISTER_L);
-      break;
-    case 0x43: // A + H
-      add(REGISTER_A, REGISTER_H);
-      break;
-    case 0x53: // A + M
-      add(REGISTER_A, REGISTER_M);
-      break;
-    case 0x63: // B + L
-      add(REGISTER_B, REGISTER_L);
-      break;
-    case 0x73: // B + H
-      add(REGISTER_B, REGISTER_H);
-      break;
-    case 0x83: // B + M
-      add(REGISTER_B, REGISTER_M);
-      break;
-
-    /* SUB - Subtracts register from accumulator. */
-    case 0x34: // A - L
-      sub(REGISTER_A, REGISTER_L);
-      break;
-    case 0x44: // A - H
-      sub(REGISTER_A, REGISTER_H);
-      break;
-    case 0x54: // A - M
-      sub(REGISTER_A, REGISTER_M);
-      break;
-    case 0x64: // B - L
-      sub(REGISTER_B, REGISTER_L);
-      break;
-    case 0x74: // B - H
-      sub(REGISTER_B, REGISTER_H);
-      break;
-    case 0x84: // B - M
-      sub(REGISTER_B, REGISTER_M);
-      break;
-
-    /* CMP - Compares register to accumulator. */
-    case 0x35: // A - L
-      cmp(REGISTER_A, REGISTER_L);
-      break;
-    case 0x45: // A - H
-      cmp(REGISTER_A, REGISTER_H);
-      break;
-    case 0x55: // A - M
-      cmp(REGISTER_A, REGISTER_M);
-      break;
-    case 0x65: // B - L
-      cmp(REGISTER_B, REGISTER_L);
-      break;
-    case 0x75: // B - H
-      cmp(REGISTER_B, REGISTER_H);
-      break;
-    case 0x85: // B - M
-      cmp(REGISTER_B, REGISTER_M);
-      break;
-
-    /* OR - Register bitwise inclusive or with accumulator. */
-    case 0x36: // A | L
-      _or(REGISTER_A, REGISTER_L);
-      break;
-    case 0x46: // A | H
-      _or(REGISTER_A, REGISTER_H);
-      break;
-    case 0x56: // A | M
-      _or(REGISTER_A, REGISTER_M);
-      break;
-    case 0x66: // B | L
-      _or(REGISTER_B, REGISTER_L);
-      break;
-    case 0x76: // B | H
-      _or(REGISTER_B, REGISTER_H);
-      break;
-    case 0x86: // B | M
-      _or(REGISTER_B, REGISTER_M);
-      break;
-
-    /* AND - Register bitwise and with accumulator */
-    case 0x37: // A & L
-      _and(REGISTER_A, REGISTER_L);
-      break;
-    case 0x47: // A & H
-      _and(REGISTER_A, REGISTER_H);
-      break;
-    case 0x57: // A & M
-      _and(REGISTER_A, REGISTER_M);
-      break;
-    case 0x67: // B & L
-      _and(REGISTER_B, REGISTER_L);
-      break;
-    case 0x77: // B & H
-      _and(REGISTER_B, REGISTER_H);
-      break;
-    case 0x87: // B & M
-      _and(REGISTER_B, REGISTER_M);
-      break;
-
-    /* XOR - Register bitwise exclusive or with accumulator. */
-    case 0x38: // A ^ L
-      _xor(REGISTER_A, REGISTER_L);
-      break;
-    case 0x48: // A ^ H
-      _xor(REGISTER_A, REGISTER_H);
-      break;
-    case 0x58: // A ^ M
-      _xor(REGISTER_A, REGISTER_M);
-      break;
-    case 0x68: // B ^ L
-      _xor(REGISTER_B, REGISTER_L);
-      break;
-    case 0x78: // B ^ H
-      _xor(REGISTER_B, REGISTER_H);
-      break;
-    case 0x88: // B ^ M
-      _xor(REGISTER_B, REGISTER_M);
-      break;
-
-    /* BIT - Register bit tested with accumulator. */
-    case 0x39: // A & L
-      _bit(REGISTER_A, REGISTER_L);
-      break;
-    case 0x49: // A & H
-      _bit(REGISTER_A, REGISTER_H);
-      break;
-    case 0x59: // A & M
-      _bit(REGISTER_A, REGISTER_M);
-      break;
-    case 0x69: // B & L
-      _bit(REGISTER_B, REGISTER_L);
-      break;
-    case 0x79: // B & H
-      _bit(REGISTER_B, REGISTER_H);
-      break;
-    case 0x89: // B & M
-      _bit(REGISTER_B, REGISTER_M);
-      break;
-
-    /* SBIA - Data subtracted from accumulator A with carry. */
-    case 0x93:
-      sbi_accumulator(REGISTER_A);
-      break;
-
-    /* SBIB - Data subtracted from accumulator B with carry. */
-    case 0x94:
-      sbi_accumulator(REGISTER_B);
-      break;
-
-    /* CPIA - Data compared to accumulator A. */
-    case 0x95:
-      set_flags_znc(fetch() - Registers[REGISTER_A]);
-      break;
-
-    /* CPIB - Data compared to accumulator B. */
-    case 0x96:
-      set_flags_znc(fetch() - Registers[REGISTER_B]);
-      break;
-
-    /* ORIA - Data bitwise inclusive or with accumulator A. */
-    case 0x97:
-      ori_accumulator(REGISTER_A);
-      break;
-
-    /* ORIB - Data bitwise inclusive or with accumulator B. */
-    case 0x98:
-      ori_accumulator(REGISTER_B);
-      break;
-
-    /* INC - Increment memory. */
-    case 0xA0: // Absolute addressing
-      inc_memory(fetch_address_abs());
-      break;
-    case 0xB0: // Indexed absolute addressing (X)
-      inc_memory(fetch_address_abs_x());
-      break;
-    case 0xC0: // Indexed absolute addressing (Y)
-      inc_memory(fetch_address_abs_y());
-      break;
-
-    /* INCA - Increment accumulator A. */
-    case 0xD0:
-      Registers[REGISTER_A]++;
-      set_flag_z(Registers[REGISTER_A]);
-      set_flag_n(Registers[REGISTER_A]);
-      break;
-
-    /* INCB - Increment accumulator B. */
-    case 0xE0:
-      Registers[REGISTER_B]++;
-      set_flag_z(Registers[REGISTER_B]);
-      set_flag_n(Registers[REGISTER_B]);
-      break;
-
-    /* DEC - Decrement memory. */
-    case 0xA1: // Absolute addressing
-      dec_memory(fetch_address_abs());
-      break;
-    case 0xB1: // Indexed absolute addressing (X)
-      dec_memory(fetch_address_abs_x());
-      break;
-    case 0xC1: // Indexed absolute addressing (Y)
-      dec_memory(fetch_address_abs_y());
-      break;
-
-    /* DECA - Decrement accumulator A. */
-    case 0xD1:
-      Registers[REGISTER_A]--;
-      set_flag_z(Registers[REGISTER_A]);
-      set_flag_n(Registers[REGISTER_A]);
-      break;
-
-    /* DECB - Decrement accumulator B. */
-    case 0xE1:
-      Registers[REGISTER_B]--;
-      set_flag_z(Registers[REGISTER_B]);
-      set_flag_n(Registers[REGISTER_B]);
-      break;
-
-    /* RRC - Rotate right through carry memory. */
-    case 0xA2: // Absolute addressing
-      rrc_memory(fetch_address_abs());
-      break;
-    case 0xB2: // Indexed absolute addressing (X)
-      rrc_memory(fetch_address_abs_x());
-      break;
-    case 0xC2: // Indexed absolute addressing (Y)
-      rrc_memory(fetch_address_abs_y());
-      break;
-
-    /* RRCA - Rotate right through carry accumulator A. */
-    case 0xD2:
-      rrc_accumulator(REGISTER_A);
-      break;
-
-    /* RRCB - Rotate right through carry accumulator B. */
-    case 0xE2:
-      rrc_accumulator(REGISTER_B);
-      break;
-
-    /* RRC - Rotate left through carry memory. */
-    case 0xA3: // Absolute addressing
-      rlc_memory(fetch_address_abs());
-      break;
-    case 0xB3: // Indexed absolute addressing (X)
-      rlc_memory(fetch_address_abs_x());
-      break;
-    case 0xC3: // Indexed absolute addressing (Y)
-      rlc_memory(fetch_address_abs_y());
-      break;
-
-    /* RLCA - Rotate left through carry accumulator A. */
-    case 0xD3:
-      rlc_accumulator(REGISTER_A);
-      break;
-
-    /* RLCB - Rotate left through carry accumulator B. */
-    case 0xE3:
-      rlc_accumulator(REGISTER_B);
-      break;
-
-    /* SAL - Arithmetic shift left memory. */
-    case 0xA4: // Absolute addressing
-      sal_memory(fetch_address_abs());
-      break;
-    case 0xB4: // Indexed absolute addressing (X)
-      sal_memory(fetch_address_abs_x());
-      break;
-    case 0xC4: // Indexed absolute addressing (Y)
-      sal_memory(fetch_address_abs_y());
-      break;
-
-    /* SALA - Arithmetic shift left accumulator A. */
-    case 0xD4:
-      sal_accumulator(REGISTER_A);
-      break;
-
-    /* SALB - Arithmetic shift left accumulator B. */
-    case 0xE4:
-      sal_accumulator(REGISTER_B);
-      break;
-
-    /* SAR - Arithmetic shift right memory. */
-    case 0xA5: // Absolute addressing
-      sar_memory(fetch_address_abs());
-      break;
-    case 0xB5: // Indexed absolute addressing (X)
-      sar_memory(fetch_address_abs_x());
-      break;
-    case 0xC5: // Indexed absolute addressing (Y)
-      sar_memory(fetch_address_abs_y());
-      break;
-
-    /* SARA - Arithmetic shift right accumulator A. */
-    case 0xD5:
-      sar_accumulator(REGISTER_A);
-      break;
-
-    /* SARB - Arithmetic shift right accumulator B. */
-    case 0xE5:
-      sar_accumulator(REGISTER_B);
-      break;
-
-    /* LSR - Shift right memory. */
-    case 0xA6: // Absolute addressing
-      lsr_memory(fetch_address_abs());
-      break;
-    case 0xB6: // Indexed absolute addressing (X)
-      lsr_memory(fetch_address_abs_x());
-      break;
-    case 0xC6: // Indexed absolute addressing (Y)
-      lsr_memory(fetch_address_abs_y());
-      break;
-
-    /* LSRA - Shift right accumulator A. */
-    case 0xD6:
-      lsr_accumulator(REGISTER_A);
-      break;
-
-    /* LSRB - Shift right accumulator B. */
-    case 0xE6:
-      lsr_accumulator(REGISTER_B);
-      break;
-
-    /* COM - Negate memory. */
-    case 0xA7: // Absolute addressing
-      com_memory(fetch_address_abs());
-      break;
-    case 0xB7: // Indexed absolute addressing (X)
-      com_memory(fetch_address_abs_x());
-      break;
-    case 0xC7: // Indexed absolute addressing (Y)
-      com_memory(fetch_address_abs_y());
-      break;
-
-    /* COMA - Negate accumulator A. */
-    case 0xD7:
-      com_accumulator(REGISTER_A);
-      break;
-
-    /* COMB - Negate accumulator B. */
-    case 0xE7:
-      com_accumulator(REGISTER_B);
-      break;
-
-    /* ROL - Rotate memory left without carry. */
-    case 0xA8: // Absolute addressing
-      rol_memory(fetch_address_abs());
-      break;
-    case 0xB8: // Indexed absolute addressing (X)
-      rol_memory(fetch_address_abs_x());
-      break;
-    case 0xC8: // Indexed absolute addressing (Y)
-      rol_memory(fetch_address_abs_y());
-      break;
-
-    /* ROLA - Rotate accumulator A left without carry. */
-    case 0xD8:
-      rol_accumulator(REGISTER_A);
-      break;
-
-    /* ROLB - Rotate accumulator B left without carry. */
-    case 0xE8:
-      rol_accumulator(REGISTER_B);
-      break;
-
-    /* RR - Rotate memory right without carry. */
-    case 0xA9: // Absolute addressing
-      rr_memory(fetch_address_abs());
-      break;
-    case 0xB9: // Indexed absolute addressing (X)
-      rr_memory(fetch_address_abs_x());
-      break;
-    case 0xC9: // Indexed absolute addressing (Y)
-      rr_memory(fetch_address_abs_y());
-      break;
-
-    /* RRA - Rotate accumulator A right without carry. */
-    case 0xD9:
-      rr_accumulator(REGISTER_A);
-      break;
-
-    /* RRB - Rotate accumulator B right without carry. */
-    case 0xE9:
-      rr_accumulator(REGISTER_B);
-      break;
-
-    /* LDX - Loads memory into index register X. */
-    case 0x0E: // Immediate addressing
-      Index_Registers[REGISTER_X] = fetch();
-      break;
-    case 0x1E: // Absolute addressing
-      Index_Registers[REGISTER_X] = Memory[fetch_address_abs()];
-      break;
-    case 0x2E: // Indexed absolute addressing (X)
-      Index_Registers[REGISTER_X] = Memory[fetch_address_abs_x()];
-      break;
-    case 0x3E: // Indexed absolute addressing (Y)
-      Index_Registers[REGISTER_X] = Memory[fetch_address_abs_y()];
-      break;
-    case 0x4E: // Indirect addressing
-      Index_Registers[REGISTER_X] = Memory[fetch_address_indir()];
-      break;
-    case 0x5E: // Indexed indirect addressing (X)
-      Index_Registers[REGISTER_X] = Memory[fetch_address_indir_x()];
-      break;
-
-    /* STOX - Stores index register X into memory. */
-    case 0xBC: // Absolute addressing
-      Memory[fetch_address_abs()] = Index_Registers[REGISTER_X];
-      break;
-    case 0xCC: // Indexed absolute addressing (X)
-      Memory[fetch_address_abs_x()] = Index_Registers[REGISTER_X];
-      break;
-    case 0xDC: // Indexed absolute addressing (Y)
-      Memory[fetch_address_abs_y()] = Index_Registers[REGISTER_X];
-      break;
-    case 0xEC: // Indirect addressing
-      Memory[fetch_address_indir()] = Index_Registers[REGISTER_X];
-      break;
-    case 0xFC: // Indexed indirect addressing (X)
-      Memory[fetch_address_indir_x()] = Index_Registers[REGISTER_X];
-      break;
-
-    /* DECX - Decrements index register X. */
-    case 0x01:
-      set_flag_z(--Index_Registers[REGISTER_X]);
-      break;
-
-    /* INCX - Increments index register X. */
-    case 0x02:
-      set_flag_z(++Index_Registers[REGISTER_X]);
-      break;
-
-    /* LDY - Loads memory into index register Y. */
-    case 0x0F: // Immediate addressing
-      Index_Registers[REGISTER_Y] = fetch();
-      break;
-    case 0x1F: // Absolute addressing
-      Index_Registers[REGISTER_Y] = Memory[fetch_address_abs()];
-      break;
-    case 0x2F: // Indexed absolute addressing (X)
-      Index_Registers[REGISTER_Y] = Memory[fetch_address_abs_x()];
-      break;
-    case 0x3F: // Indexed absolute addressing (Y)
-      Index_Registers[REGISTER_Y] = Memory[fetch_address_abs_y()];
-      break;
-    case 0x4F: // Indirect addressing
-      Index_Registers[REGISTER_Y] = Memory[fetch_address_indir()];
-      break;
-    case 0x5F: // Indexed indirect addressing (X)
-      Index_Registers[REGISTER_Y] = Memory[fetch_address_indir_x()];
-      break;
-
-    /* STOY - Stores index register Y into memory. */
-    case 0xBD: // Absolute addressing
-      Memory[fetch_address_abs()] = Index_Registers[REGISTER_Y];
-      break;
-    case 0xCD: // Indexed absolute addressing (X)
-      Memory[fetch_address_abs_x()] = Index_Registers[REGISTER_Y];
-      break;
-    case 0xDD: // Indexed absolute addressing (Y)
-      Memory[fetch_address_abs_y()] = Index_Registers[REGISTER_Y];
-      break;
-    case 0xED: // Indirect addressing
-      Memory[fetch_address_indir()] = Index_Registers[REGISTER_Y];
-      break;
-    case 0xFD: // Indexed indirect addressing (X)
-      Memory[fetch_address_indir_x()] = Index_Registers[REGISTER_Y];
-      break;
-
-    /* CAY - Transfers accumulator A to index register Y. */
-    case 0xF0:
-      Index_Registers[REGISTER_Y] = Registers[REGISTER_A];
-      set_flag_n(Index_Registers[REGISTER_Y]);
-      break;
-
-    /* MYA - Transfers index register Y to accumulator A. */
-    case 0xF1:
-      Registers[REGISTER_A] = Index_Registers[REGISTER_Y];
-      break;
-
-    /* DECY - Decrements index register Y. */
-    case 0x03:
-      set_flag_z(--Index_Registers[REGISTER_Y]);
-      break;
-
-    /* INCY - Increments index register Y. */
-    case 0x04:
-      set_flag_z(++Index_Registers[REGISTER_Y]);
-      break;
-
-    /* LODS - Loads memory into stackpointer. */
-    case 0x20: // Immediate addressing
-      StackPointer = (fetch() << 8) + fetch();
-      break;
-    case 0x30: // Absolute addressing
-      load_stackpointer(fetch_address_abs());
-      break;
-    case 0x40: // Indexed absolute addressing (X)
-      load_stackpointer(fetch_address_abs_x());
-      break;
-    case 0x50: // Indexed absolute addressing (Y)
-      load_stackpointer(fetch_address_abs_y());
-      break;
-    case 0x60: // Indirect addressing
-      load_stackpointer(fetch_address_indir());
-      break;
-    case 0x70: // Indexed indirect addressing (X)
-      load_stackpointer(fetch_address_indir_x());
-      break;
-
-    /* STOS - Stores stackpointer into memory. */
-    case 0x6A: // Absolute addressing
-      save_stackpointer(fetch_address_abs());
-      break;
-    case 0x7A: // Indexed absolute addressing (X)
-      save_stackpointer(fetch_address_abs_x());
-      break;
-    case 0x8A: // Indexed absolute addressing (Y)
-      save_stackpointer(fetch_address_abs_y());
-      break;
-    case 0x9A: // Indirect addressing
-      save_stackpointer(fetch_address_indir());
-      break;
-    case 0xAA: // Indexed indirect addressing (X)
-      save_stackpointer(fetch_address_indir_x());
-      break;
-
-    /* CSA - Transfers status register to accumulator A. */
-    case 0xF2:
-      Registers[REGISTER_A] = Flags;
-      break;
-
-    /* PUSH - Pushes register onto the stack. */
-    case 0xBE:
-      Memory[StackPointer--] = Registers[REGISTER_A];
-      break;
-    case 0xCE:
-      Memory[StackPointer--] = Registers[REGISTER_B];
-      break;
-    case 0xDE:
-      Memory[StackPointer--] = Registers[Flags];
-      break;
-    case 0xEE:
-      Memory[StackPointer--] = Registers[REGISTER_L];
-      break;
-    case 0xFE:
-      Memory[StackPointer--] = Registers[REGISTER_H];
-      break;
-
-    /* POP - Pop the top of the stack to the register. */
-    case 0xBF:
-      Registers[REGISTER_A] = Memory[++StackPointer];
-      break;
-    case 0xCF:
-      Registers[REGISTER_B] = Memory[++StackPointer];
-      break;
-    case 0xDF:
-      Registers[Flags] = Memory[++StackPointer];
-      break;
-    case 0xEF:
-      Registers[REGISTER_L] = Memory[++StackPointer];
-      break;
-    case 0xFF:
-      Registers[REGISTER_H] = Memory[++StackPointer];
-      break;
-
-    /* LX - Loads memory into register pair. */
-    case 0x0C:
-    case 0x0D:
-      Registers[REGISTER_H] = fetch();
-      Registers[REGISTER_L] = fetch();
-      break;
-
-    /* JMP - Loads memory into program counter. */
-    case 0x10:
-      ProgramCounter = fetch_address_abs();
-      break;
-
-    /* ABA - Adds accumulator B into accumulator A. */
-    case 0xF3:
-      Registers[REGISTER_A] += Registers[REGISTER_B];
-      set_flags_znc(Registers[REGISTER_A]);
-      break;
-
-    /* SBA - Subtracts accumulator B from accumulator A. */
-    case 0xF4:
-      Registers[REGISTER_A] -= Registers[REGISTER_B];
-      set_flags_znc(Registers[REGISTER_A]);
-      break;
-
-    /* AAB - Adds accumulator A into accumulator B. */
-    case 0xF5:
-      Registers[REGISTER_B] += Registers[REGISTER_A];
-      set_flags_znc(Registers[REGISTER_B]);
-      break;
-
-    /* SAB - Subtracts accumulator A from accumulator B. */
-    case 0xF6:
-      Registers[REGISTER_B] -= Registers[REGISTER_A];
-      set_flags_znc(Registers[REGISTER_B]);
-      break;
-
-    /* MVI - Loads memory into register. */
-    case 0x1C:
-      Registers[REGISTER_L] = fetch();
-      break;
-    case 0x1D:
-      Registers[REGISTER_H] = fetch();
-      break;
-
-    /* ADCP - Adds register pair into accumulator pair. */
-    case 0xF7:
-      adc(REGISTER_A, REGISTER_L);
-      break;
-
-    /* SBCP - Subtracts register pair into accumulator pair. */
-    case 0xF8:
-      sbc(REGISTER_A, REGISTER_L);
-      break;
-
-    /* XCHG - Swaps the registers contents. */
-    case 0x92:
-      xchg(REGISTER_A, REGISTER_L);
-      break;
-
-    /* JSR - Jump subroutine. */
-    case 0x21:
-      jsr();
-      break;
-
-    /* RET - Return from subroutine. */
-    case 0x4C:
-      ret();
-      break;
-
-    /* JCC - Jump on carry clear. */
-    case 0x11:
-      jump((Flags & FLAG_C) == 0);
-      break;
-
-    /* JCS - Jump on carry set. */
-    case 0x12:
-      jump((Flags & FLAG_C) != 0);
-      break;
-
-    /* JNE - Jump on result not zero. */
-    case 0x13:
-      jump((Flags & FLAG_Z) != FLAG_Z);
-      break;
-
-    /* JEQ - Jump on result equal to zero. */
-    case 0x14:
-      jump((Flags & FLAG_Z) == FLAG_Z);
-      break;
-
-    /* JMI - Jump on negative result. */
-    case 0x15:
-      jump((Flags & FLAG_N) != 0);
-      break;
-
-    /* JPL - Jump on positive result. */
-    case 0x16:
-      jump((Flags & FLAG_N) == 0);
-      break;
-
-    /* JHI - Jump on result same or lower. */
-    case 0x17:
-      jump((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0);
-      break;
-
-    /* JLE - Jump on result higher. */
-    case 0x18:
-      jump(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z))));
-      break;
-
-    /* CCC - Call on carry clear. */
-    case 0x22:
-      call((Flags & FLAG_C) != FLAG_C);
-      break;
-
-    /* CCS - Call on carry set. */
-    case 0x23:
-      call((Flags & FLAG_C) == FLAG_C);
-      break;
-
-    /* CNE - Call on not zero. */
-    case 0x24:
-      call((Flags & FLAG_Z) != FLAG_Z);
-      break;
-
-    /* CEQ - Call on result equal to zero. */
-    case 0x25:
-      call((Flags & FLAG_Z) != 0);
-      break;
-
-    /* CMI - Call on negative result. */
-    case 0x26:
-      call((Flags & FLAG_N) == FLAG_N);
-      break;
-
-    /* CPL - Call on positive result. */
-    case 0x27:
-      call((Flags & FLAG_N) != FLAG_N);
-      break;
-
-    /* CHI - Call on result same or lower. */
-    case 0x28:
-      call((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z)));
-      break;
-
-    /* CLE - Call on result higher. */
-    case 0x29:
-      call(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z))));
-      break;
-
-    /* CLC - Clear carry flag. */
-    case 0x05:
-      Flags = Flags & (0xFF - FLAG_C);
-      break;
-
-    /* STC - Set carry flag. */
-    case 0x06:
-      Flags = Flags | FLAG_C;
-      break;
-
-    /* CLI - Clear interrupt flag. */
-    case 0x07:
-      Flags = Flags & (0xFF - FLAG_I);
-      break;
-
-    /* STI - Set interrupt flag. */
-    case 0x08:
-      Flags = Flags | FLAG_I;
-      break;
-
-    /* NOP - No operation. */
-    case 0x2C:
-      break;
-
-    /* HLT - Wait for interrupt. */
-    case 0x2D:
-      halt = true;
-      break;
-
-    /* SWI - Software interrupt. */
-    case 0x5C:
-      Flags |= FLAG_I;
-      Memory[StackPointer--] = Registers[REGISTER_A];
-      Memory[StackPointer--] = Registers[REGISTER_B];
-      Memory[StackPointer--] = Registers[Flags];
-      Memory[StackPointer--] = Registers[REGISTER_L];
-      Memory[StackPointer--] = Registers[REGISTER_H];
-      break;
-
-    /* RTI - Return from software interrupt. */
-    case 0x5D:
-      Registers[REGISTER_L] = Memory[++StackPointer];
-      Registers[REGISTER_H] = Memory[++StackPointer];
-      Registers[Flags] = Memory[++StackPointer];
-      Registers[REGISTER_B] = Memory[++StackPointer];
-      Registers[REGISTER_A] = Memory[++StackPointer];
-      break;
-  }
+  operations[opcode]();
 }
 
 void Group_2_Move(BYTE opcode) {
