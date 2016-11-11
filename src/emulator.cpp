@@ -947,18 +947,6 @@ void save_stackpointer(WORD address) {
 }
 
 /**
- * Swaps the registers contents.
- *
- * @param reg1 the first register.
- * @param reg2 the second register.
- */
-void xchg(int reg1, int reg2) {
-  BYTE data = Registers[reg1];
-  Registers[reg1] = Registers[reg2];
-  Registers[reg2] = data;
-}
-
-/**
  * Performs a jump if the condition is true.
  *
  * @param condition the condition to check.
@@ -1357,7 +1345,11 @@ void adcp() { adc(REGISTER_A, REGISTER_L); }
 void sbcp() { sbc(REGISTER_A, REGISTER_L); }
 
 /* XCHG - Swaps the registers contents. */
-void xchg_al() { xchg(REGISTER_A, REGISTER_L); }
+void xchg() {
+  BYTE data = Registers[REGISTER_A];
+  Registers[REGISTER_A] = Registers[REGISTER_L];
+  Registers[REGISTER_L] = data;
+}
 
 /* JSR - Jump subroutine. */
 void jsr() {
@@ -1518,7 +1510,7 @@ void (*operations[])() = {
   incb, decb, rrcb, rlcb, salb, sarb, lsrb, comb,
   rolb, rrb, stora_indir, storb_indir, stox_indir, stoy_indir, push_l, pop_l,
   cay, mya, csa, aba, sba, aab, sab, adcp,
-  sbcp, xchg_al, stora_indir_x, storb_indir_x, stox_indir_x, stoy_indir_x, push_h, pop_h
+  sbcp, xchg, stora_indir_x, storb_indir_x, stox_indir_x, stoy_indir_x, push_h, pop_h
 };
 
 void execute(BYTE opcode) {
