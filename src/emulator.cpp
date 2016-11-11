@@ -1,3 +1,10 @@
+/**
+ * @file emulator.cpp
+ * @author William Randall (16002374)
+ * @date 11th November 2016
+ * @brief Emulator assignment for CaNS at UWE.
+ */
+
 #include <winsock2.h>
 #include <stdio.h>
 
@@ -5,8 +12,8 @@
 
 #define STUDENT_NUMBER "16002374"
 #define IP_ADDRESS_SERVER "127.0.0.1"
-#define PORT_SERVER 0x1984 // We define a port that we are going to use.
-#define PORT_CLIENT 0x1985 // We define a port that we are going to use.
+#define PORT_SERVER 0x1984
+#define PORT_CLIENT 0x1985
 
 #define WORD  unsigned short
 #define DWORD unsigned long
@@ -18,7 +25,7 @@
 SOCKADDR_IN server_addr;
 SOCKADDR_IN client_addr;
 
-SOCKET sock;  // This is our socket, it is the handle to the IO address to read/write packets
+SOCKET sock;
 
 WSADATA data;
 
@@ -474,9 +481,9 @@ WORD fetch_address_indir_x() {
  */
 void adc(int accumulator, int reg) {
   WORD result = Registers[accumulator] + Registers[reg];
-  if ((Flags & FLAG_C) != 0) {
+
+  if (Flags & FLAG_C != 0)
     result++;
-  }
 
   Registers[accumulator] = result;
   set_flags_znc(result);
@@ -1388,7 +1395,7 @@ void jpl() { jump((Flags & FLAG_N) == 0); }
 void jhi() { jump((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0); }
 
 /* JLE - Jump on result higher. */
-void jle() { jump(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z)))); }
+void jle() { jump(Flags != (Flags | FLAG_C) && Flags != (Flags | FLAG_Z)); }
 
 /* CCC - Call on carry clear. */
 void ccc() { call((Flags & FLAG_C) != FLAG_C); }
@@ -1409,10 +1416,10 @@ void cmi() { call((Flags & FLAG_N) == FLAG_N); }
 void cpl() { call((Flags & FLAG_N) != FLAG_N); }
 
 /* CHI - Call on result same or lower. */
-void chi() { call((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z))); }
+void chi() { call(Flags == (Flags | FLAG_C) || Flags == (Flags | FLAG_Z)); }
 
 /* CLE - Call on result higher. */
-void cle() { call(!((Flags == (Flags | FLAG_C)) || (Flags == (Flags | FLAG_Z)))); }
+void cle() { call(Flags != (Flags | FLAG_C) && Flags != (Flags | FLAG_Z)); }
 
 /* CLC - Clear carry flag. */
 void clc() { Flags = Flags & (0xFF - FLAG_C); }
