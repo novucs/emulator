@@ -368,14 +368,22 @@ char opcode_mneumonics[][14] = {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Gets the next instruction.
+ * Checks if a flag is set.
+ *
+ * @param flag the flag to check.
  */
-BYTE fetch() {
-  if (ProgramCounter < 0 || ProgramCounter > MEMORY_SIZE)
-    memory_in_range = false;
-  else
-    return Memory[ProgramCounter++];
-  return 0;
+bool is_flag_set(BYTE flag) {
+  return Flags & flag;
+}
+
+/**
+ * Updates a flag to a new state.
+ *
+ * @param state the new flag state.
+ * @param flag the flag to update.
+ */
+void set_flag(bool state, BYTE flag) {
+  state ? Flags |= flag : Flags &= ~flag;
 }
 
 /**
@@ -384,10 +392,7 @@ BYTE fetch() {
  * @param data the register value.
  */
 void set_flag_z(BYTE data) {
-  if (data == 0)
-    Flags = Flags | FLAG_Z;
-  else
-    Flags = Flags & (0xFF - FLAG_Z);
+  set_flag(data == 0, FLAG_Z);
 }
 
 /**
@@ -396,10 +401,7 @@ void set_flag_z(BYTE data) {
  * @param data the register value.
  */
 void set_flag_n(BYTE data) {
-  if ((data & 0x80) == 0x80)
-    Flags = Flags | FLAG_N;
-  else
-    Flags = Flags & (0xFF - FLAG_N);
+  set_flag(data & 0x80, FLAG_N);
 }
 
 /**
@@ -408,21 +410,34 @@ void set_flag_n(BYTE data) {
  * @param data the register value.
  */
 void set_flag_c(WORD data) {
-  if (data >= 0x100)
-    Flags = Flags | FLAG_C;
-  else
-    Flags = Flags & (0xFF - FLAG_C);
+  set_flag(data > 0xFF, FLAG_C);
 }
 
 /**
- * Updates the ZNC flags depending on the contents of a register.
+ * Updates the Z and N flags depending on the contents of a register.
+ *
+ * @param data the register value.
+ */
+ void set_flags_zn(BYTE data) {
+   set_flag_z(data);
+   set_flag_n(data);
+ }
+
+/**
+ * Updates the Z, N and C flags depending on the contents of a register.
  *
  * @param data the register value.
  */
 void set_flags_znc(WORD data) {
+  set_flags_zn(data);
   set_flag_c(data);
-  set_flag_n(data);
-  set_flag_z(data);
+}
+
+/**
+ * Gets the next instruction from memory.
+ */
+BYTE fetch() {
+  return Memory[ProgramCounter++];
 }
 
 /**
@@ -482,7 +497,7 @@ WORD fetch_address_indir_x() {
 void adc(int accumulator, int reg) {
   WORD result = Registers[accumulator] + Registers[reg];
 
-  if (Flags & FLAG_C != 0)
+  if (is_flag_set(FLAG_C))
     result++;
 
   Registers[accumulator] = result;
@@ -498,7 +513,7 @@ void adc(int accumulator, int reg) {
 void sbc(int accumulator, int reg) {
   WORD result = Registers[accumulator] - Registers[reg];
 
-  if (Flags & FLAG_C != 0)
+  if (is_flag_set(FLAG_C))
     result--;
 
   Registers[accumulator] = result;
@@ -536,8 +551,7 @@ void sub(int accumulator, int reg) {
  * @param reg         the register to compare.
  */
 void cmp(int accumulator, int reg) {
-  WORD result = Registers[accumulator] - Registers[reg];
-  set_flags_znc(result);
+  set_flags_znc(Registers[accumulator] - Registers[reg]);
 }
 
 /**
@@ -547,9 +561,7 @@ void cmp(int accumulator, int reg) {
  * @param reg         the register.
  */
 void _or(int accumulator, int reg) {
-  Registers[accumulator] |= Registers[reg];
-  set_flag_z(Registers[accumulator]);
-  set_flag_n(Registers[accumulator]);
+  set_flags_zn(Registers[accumulator] |= Registers[reg]);
 }
 
 /**
@@ -559,9 +571,7 @@ void _or(int accumulator, int reg) {
  * @param reg         the register.
  */
 void _and(int accumulator, int reg) {
-  Registers[accumulator] &= Registers[reg];
-  set_flag_z(Registers[accumulator]);
-  set_flag_n(Registers[accumulator]);
+  set_flags_zn(Registers[accumulator] &= Registers[reg]);
 }
 
 /**
@@ -571,9 +581,7 @@ void _and(int accumulator, int reg) {
  * @param reg         the register.
  */
 void _xor(int accumulator, int reg) {
-  Registers[accumulator] ^= Registers[reg];
-  set_flag_z(Registers[accumulator]);
-  set_flag_n(Registers[accumulator]);
+  set_flags_zn(Registers[accumulator] ^= Registers[reg]);
 }
 
 /**
@@ -583,9 +591,7 @@ void _xor(int accumulator, int reg) {
  * @param reg         the register.
  */
 void _bit(int accumulator, int reg) {
-  BYTE result = Registers[accumulator] & Registers[reg];
-  set_flag_z(result);
-  set_flag_n(result);
+  set_flags_zn(Registers[accumulator] & Registers[reg]);
 }
 
 /**
@@ -596,7 +602,7 @@ void _bit(int accumulator, int reg) {
 void sbi_accumulator(int accumulator) {
   WORD result = fetch() - Registers[accumulator];
 
-  if (Flags & FLAG_C != 0)
+  if (is_flag_set(FLAG_C))
     result--;
 
   set_flags_znc(result);
@@ -609,9 +615,7 @@ void sbi_accumulator(int accumulator) {
  * @param accumulator the accumulator to use.
  */
 void ori_accumulator(int accumulator) {
-  BYTE result = Registers[accumulator] |= fetch();
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(Registers[accumulator] |= fetch());
 }
 
 /**
@@ -620,9 +624,7 @@ void ori_accumulator(int accumulator) {
  * @param address the memory address.
  */
 void inc_memory(WORD address) {
-  BYTE result = Memory[address]++;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(++Memory[address]);
 }
 
 /**
@@ -631,9 +633,7 @@ void inc_memory(WORD address) {
  * @param address the memory address.
  */
 void dec_memory(WORD address) {
-  BYTE result = Memory[address]--;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(--Memory[address]);
 }
 
 /**
@@ -645,19 +645,15 @@ void rrc_memory(WORD address) {
   // Rotate memory to the right.
   BYTE result = Memory[address] >> 1;
 
-  if (Flags & FLAG_C != 0)
-    result += 128;
+  if (is_flag_set(FLAG_C))
+    result += 0x80;
 
   // Update the carry flag.
-  if (Memory[address] % 2 == 0)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Memory[address] % 2 != 0, FLAG_C);
 
   // Update memory and set negative and zero flags.
   Memory[address] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -669,19 +665,15 @@ void rrc_accumulator(int accumulator) {
   // Rotate accumulator to the right.
   BYTE result = Registers[accumulator] >> 1;
 
-  if (Flags & FLAG_C != 0)
-    result += 128;
+  if (is_flag_set(FLAG_C))
+    result += 0x80;
 
   // Update the carry flag.
-  if (Registers[accumulator] % 2 == 0)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Registers[accumulator] % 2 != 0, FLAG_C);
 
   // Update accumulator and set negative and zero flags.
   Registers[accumulator] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -693,19 +685,15 @@ void rlc_memory(WORD address) {
   // Rotate memory to the left.
   BYTE result = Memory[address] << 1;
 
-  if (Flags & FLAG_C != 0)
+  if (is_flag_set(FLAG_C))
     result += 1;
 
   // Update the carry flag.
-  if (Memory[address] < 128)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Memory[address] >= 0x80, FLAG_C);
 
   // Update accumulator and set negative and zero flags.
   Memory[address] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -717,32 +705,24 @@ void rlc_accumulator(int accumulator) {
   // Rotate accumulator to the left.
   BYTE result = Registers[accumulator] << 1;
 
-  if (Flags & FLAG_C != 0)
+  if (is_flag_set(FLAG_C))
     result += 1;
 
   // Update the carry flag.
-  if (Registers[accumulator] < 128)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Registers[accumulator] >= 0x80, FLAG_C);
 
   // Update accumulator and set negative and zero flags.
   Registers[accumulator] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 void sal_memory(WORD address) {
   // Update the carry flag.
-  if (Memory[address] < 128)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Memory[address] >= 0x80, FLAG_C);
 
   // Update memory and set negative and zero flags.
   Memory[address] <<= 1;
-  set_flag_n(Memory[address]);
-  set_flag_z(Memory[address]);
+  set_flags_zn(Memory[address]);
 }
 
 /**
@@ -765,19 +745,15 @@ void sar_memory(WORD address) {
   // Shift memory to the right.
   BYTE result = Memory[address] >> 1;
 
-  if (Memory[address] > 127)
-    result += 128;
+  if (Memory[address] >= 0x80)
+    result += 0x80;
 
   // Update the carry flag.
-  if (Memory[address] % 2 == 0)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Memory[address] % 2 != 0, FLAG_C);
 
   // Update memory and set negative and zero flags.
   Memory[address] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -789,19 +765,15 @@ void sar_accumulator(int accumulator) {
   // Shift accumulator to the right.
   BYTE result = Registers[accumulator] >> 1;
 
-  if (Registers[accumulator] > 127)
-    result += 128;
+  if (Registers[accumulator] >= 0x80)
+    result += 0x80;
 
   // Update the carry flag.
-  if (Registers[accumulator] % 2 == 0)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Registers[accumulator] % 2 != 0, FLAG_C);
 
   // Update accumulator and set negative and zero flags.
   Registers[accumulator] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -811,15 +783,11 @@ void sar_accumulator(int accumulator) {
  */
 void lsr_memory(WORD address) {
   // Update the carry flag.
-  if (Memory[address] % 2 == 0)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Memory[address] % 2 != 0, FLAG_C);
 
   // Update memory and set negative and zero flags.
   Memory[address] >>= 1;
-  set_flag_n(Memory[address]);
-  set_flag_z(Memory[address]);
+  set_flags_zn(Memory[address]);
 }
 
 /**
@@ -829,15 +797,11 @@ void lsr_memory(WORD address) {
  */
 void lsr_accumulator(int accumulator) {
   // Update the carry flag.
-  if (Registers[accumulator] % 2 == 0)
-    Flags = Flags & (0xFF - FLAG_C);
-  else
-    Flags = Flags | FLAG_C;
+  set_flag(Registers[accumulator] % 2 != 0, FLAG_C);
 
   // Update memory and set negative and zero flags.
   Registers[accumulator] >>= 1;
-  set_flag_n(Registers[accumulator]);
-  set_flag_z(Registers[accumulator]);
+  set_flags_zn(Registers[accumulator]);
 }
 
 /**
@@ -871,13 +835,12 @@ void rol_memory(WORD address) {
   // Rotate memory to the left.
   BYTE result = Memory[address] << 1;
 
-  if (Memory[address] >= 128)
+  if (Memory[address] >= 0x80)
     result++;
 
   // Update memory and set negative and zero flags.
   Memory[address] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -889,13 +852,12 @@ void rol_accumulator(int accumulator) {
   // Rotate accumulator to the left.
   BYTE result = Registers[accumulator] << 1;
 
-  if (Registers[accumulator] >= 128)
+  if (Registers[accumulator] >= 0x80)
     result++;
 
   // Update accumulator and set negative and zero flags.
   Registers[accumulator] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -908,12 +870,11 @@ void rr_memory(WORD address) {
   BYTE result = Memory[address] >> 1;
 
   if (Memory[address] % 2 != 0)
-    result += 128;
+    result += 0x80;
 
   // Update memory and set negative and zero flags.
   Memory[address] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -926,12 +887,11 @@ void rr_accumulator(int accumulator) {
   BYTE result = Registers[accumulator] >> 1;
 
   if (Registers[accumulator] % 2 != 0)
-    result += 128;
+    result += 0x80;
 
   // Update accumulator and set negative and zero flags.
   Registers[accumulator] = result;
-  set_flag_n(result);
-  set_flag_z(result);
+  set_flags_zn(result);
 }
 
 /**
@@ -1105,18 +1065,10 @@ void inc_abs_x() { inc_memory(fetch_address_abs_x()); }
 void inc_abs_y() { inc_memory(fetch_address_abs_y()); }
 
 /* INCA - Increment accumulator A. */
-void inca() {
-  Registers[REGISTER_A]++;
-  set_flag_z(Registers[REGISTER_A]);
-  set_flag_n(Registers[REGISTER_A]);
-}
+void inca() { set_flags_zn(++Registers[REGISTER_A]); }
 
 /* INCB - Increment accumulator B. */
-void incb() {
-  Registers[REGISTER_B]++;
-  set_flag_z(Registers[REGISTER_B]);
-  set_flag_n(Registers[REGISTER_B]);
-}
+void incb() { set_flags_zn(++Registers[REGISTER_B]); }
 
 /* DEC - Decrement memory. */
 void dec_abs() { dec_memory(fetch_address_abs()); }
@@ -1124,18 +1076,10 @@ void dec_abs_x() { dec_memory(fetch_address_abs_x()); }
 void dec_abs_y() { dec_memory(fetch_address_abs_y()); }
 
 /* DECA - Decrement accumulator A. */
-void deca() {
-  Registers[REGISTER_A]--;
-  set_flag_z(Registers[REGISTER_A]);
-  set_flag_n(Registers[REGISTER_A]);
-}
+void deca() { set_flags_zn(--Registers[REGISTER_A]); }
 
 /* DECB - Decrement accumulator B. */
-void decb() {
-  Registers[REGISTER_B]--;
-  set_flag_z(Registers[REGISTER_B]);
-  set_flag_n(Registers[REGISTER_B]);
-}
+void decb() { set_flags_zn(--Registers[REGISTER_B]); }
 
 /* RRC - Rotate right through carry memory. */
 void rrc_abs() { rrc_memory(fetch_address_abs()); }
@@ -1225,6 +1169,33 @@ void rra() { rr_accumulator(REGISTER_A); }
 /* RRB - Rotate accumulator B right without carry. */
 void rrb() { rr_accumulator(REGISTER_B); }
 
+/* MOVE - Transfers from one register to another. */
+void move_aa() {}
+void move_ab() { Registers[REGISTER_A] = Registers[REGISTER_B]; }
+void move_al() { Registers[REGISTER_A] = Registers[REGISTER_L]; }
+void move_ah() { Registers[REGISTER_A] = Registers[REGISTER_H]; }
+void move_am() { Registers[REGISTER_A] = Registers[REGISTER_M]; }
+void move_ba() { Registers[REGISTER_B] = Registers[REGISTER_A]; }
+void move_bb() {}
+void move_bl() { Registers[REGISTER_B] = Registers[REGISTER_L]; }
+void move_bh() { Registers[REGISTER_B] = Registers[REGISTER_H]; }
+void move_bm() { Registers[REGISTER_B] = Registers[REGISTER_M]; }
+void move_la() { Registers[REGISTER_L] = Registers[REGISTER_A]; }
+void move_lb() { Registers[REGISTER_L] = Registers[REGISTER_B]; }
+void move_ll() {}
+void move_lh() { Registers[REGISTER_L] = Registers[REGISTER_H]; }
+void move_lm() { Registers[REGISTER_L] = Registers[REGISTER_M]; }
+void move_ha() { Registers[REGISTER_H] = Registers[REGISTER_A]; }
+void move_hb() { Registers[REGISTER_H] = Registers[REGISTER_B]; }
+void move_hl() { Registers[REGISTER_H] = Registers[REGISTER_L]; }
+void move_hh() {}
+void move_hm() { Registers[REGISTER_H] = Registers[REGISTER_M]; }
+void move_ma() { Registers[REGISTER_M] = Registers[REGISTER_A]; }
+void move_mb() { Registers[REGISTER_M] = Registers[REGISTER_B]; }
+void move_ml() { Registers[REGISTER_M] = Registers[REGISTER_L]; }
+void move_mh() { Registers[REGISTER_M] = Registers[REGISTER_H]; }
+void move_mm() {}
+
 /* LDX - Loads memory into index register X. */
 void ldx_imm() { Index_Registers[REGISTER_X] = fetch(); }
 void ldx_abs() { Index_Registers[REGISTER_X] = Memory[fetch_address_abs()]; }
@@ -1262,10 +1233,7 @@ void stoy_indir() { Memory[fetch_address_indir()] = Index_Registers[REGISTER_Y];
 void stoy_indir_x() { Memory[fetch_address_indir_x()] = Index_Registers[REGISTER_Y]; }
 
 /* CAY - Transfers accumulator A to index register Y. */
-void cay() {
-  Index_Registers[REGISTER_Y] = Registers[REGISTER_A];
-  set_flag_n(Index_Registers[REGISTER_Y]);
-}
+void cay() { set_flag_n(Index_Registers[REGISTER_Y] = Registers[REGISTER_A]); }
 
 /* MYA - Transfers index register Y to accumulator A. */
 void mya() { Registers[REGISTER_A] = Index_Registers[REGISTER_Y]; }
@@ -1318,28 +1286,16 @@ void lx() {
 void jmp() { ProgramCounter = fetch_address_abs(); }
 
 /* ABA - Adds accumulator B into accumulator A. */
-void aba() {
-  Registers[REGISTER_A] += Registers[REGISTER_B];
-  set_flags_znc(Registers[REGISTER_A]);
-}
+void aba() { set_flags_znc(Registers[REGISTER_A] += Registers[REGISTER_B]); }
 
 /* SBA - Subtracts accumulator B from accumulator A. */
-void sba() {
-  Registers[REGISTER_A] -= Registers[REGISTER_B];
-  set_flags_znc(Registers[REGISTER_A]);
-}
+void sba() { set_flags_znc(Registers[REGISTER_A] -= Registers[REGISTER_B]); }
 
 /* AAB - Adds accumulator A into accumulator B. */
-void aab() {
-  Registers[REGISTER_B] += Registers[REGISTER_A];
-  set_flags_znc(Registers[REGISTER_B]);
-}
+void aab() { set_flags_znc(Registers[REGISTER_B] += Registers[REGISTER_A]); }
 
 /* SAB - Subtracts accumulator A from accumulator B. */
-void sab() {
-  Registers[REGISTER_B] -= Registers[REGISTER_A];
-  set_flags_znc(Registers[REGISTER_B]);
-}
+void sab() { set_flags_znc(Registers[REGISTER_B] -= Registers[REGISTER_A]); }
 
 /* MVI - Loads memory into register. */
 void mvi_l() { Registers[REGISTER_L] = fetch(); }
@@ -1374,64 +1330,64 @@ void ret() {
 }
 
 /* JCC - Jump on carry clear. */
-void jcc() { jump((Flags & FLAG_C) == 0); }
+void jcc() { jump(!is_flag_set(FLAG_C)); }
 
 /* JCS - Jump on carry set. */
-void jcs() { jump((Flags & FLAG_C) != 0); }
+void jcs() { jump(is_flag_set(FLAG_C)); }
 
 /* JNE - Jump on result not zero. */
-void jne() { jump((Flags & FLAG_Z) != FLAG_Z); }
+void jne() { jump(!is_flag_set(FLAG_Z)); }
 
 /* JEQ - Jump on result equal to zero. */
-void jeq() { jump((Flags & FLAG_Z) == FLAG_Z); }
+void jeq() { jump(is_flag_set(FLAG_Z)); }
 
 /* JMI - Jump on negative result. */
-void jmi() { jump((Flags & FLAG_N) != 0); }
+void jmi() { jump(is_flag_set(FLAG_N)); }
 
 /* JPL - Jump on positive result. */
-void jpl() { jump((Flags & FLAG_N) == 0); }
+void jpl() { jump(!is_flag_set(FLAG_N)); }
 
 /* JHI - Jump on result same or lower. */
-void jhi() { jump((Flags & FLAG_Z) != 0 || (Flags & FLAG_C) != 0); }
+void jhi() { jump(is_flag_set(FLAG_C) || is_flag_set(FLAG_Z)); }
 
 /* JLE - Jump on result higher. */
-void jle() { jump(Flags != (Flags | FLAG_C) && Flags != (Flags | FLAG_Z)); }
+void jle() { jump(!is_flag_set(FLAG_C) && !is_flag_set(FLAG_Z)); }
 
 /* CCC - Call on carry clear. */
-void ccc() { call((Flags & FLAG_C) != FLAG_C); }
+void ccc() { call(!is_flag_set(FLAG_C)); }
 
 /* CCS - Call on carry set. */
-void ccs() { call((Flags & FLAG_C) == FLAG_C); }
+void ccs() { call(is_flag_set(FLAG_C)); }
 
 /* CNE - Call on not zero. */
-void cne() { call((Flags & FLAG_Z) != FLAG_Z); }
+void cne() { call(!is_flag_set(FLAG_Z)); }
 
 /* CEQ - Call on result equal to zero. */
-void ceq() { call((Flags & FLAG_Z) != 0); }
+void ceq() { call(is_flag_set(FLAG_Z)); }
 
 /* CMI - Call on negative result. */
-void cmi() { call((Flags & FLAG_N) == FLAG_N); }
+void cmi() { call(is_flag_set(FLAG_N)); }
 
 /* CPL - Call on positive result. */
-void cpl() { call((Flags & FLAG_N) != FLAG_N); }
+void cpl() { call(!is_flag_set(FLAG_N)); }
 
 /* CHI - Call on result same or lower. */
-void chi() { call(Flags == (Flags | FLAG_C) || Flags == (Flags | FLAG_Z)); }
+void chi() { call(is_flag_set(FLAG_C) || is_flag_set(FLAG_Z)); }
 
 /* CLE - Call on result higher. */
-void cle() { call(Flags != (Flags | FLAG_C) && Flags != (Flags | FLAG_Z)); }
+void cle() { call(!is_flag_set(FLAG_C) && !is_flag_set(FLAG_Z)); }
 
 /* CLC - Clear carry flag. */
-void clc() { Flags = Flags & (0xFF - FLAG_C); }
+void clc() { Flags &= ~FLAG_C; }
 
 /* STC - Set carry flag. */
-void stc() { Flags = Flags | FLAG_C; }
+void stc() { Flags |= FLAG_C; }
 
 /* CLI - Clear interrupt flag. */
-void cli() { Flags = Flags & (0xFF - FLAG_I); }
+void cli() { Flags &= ~FLAG_I; }
 
 /* STI - Set interrupt flag. */
-void sti() { Flags = Flags | FLAG_I; }
+void sti() { Flags |= FLAG_I; }
 
 /* NOP - No operation. */
 void nop() {}
@@ -1458,34 +1414,8 @@ void rti() {
   Registers[REGISTER_A] = Memory[++StackPointer];
 }
 
-/* MOVE - Transfers from one register to another. */
-void move_aa() {}
-void move_ab() { Registers[REGISTER_A] = Registers[REGISTER_B]; }
-void move_al() { Registers[REGISTER_A] = Registers[REGISTER_L]; }
-void move_ah() { Registers[REGISTER_A] = Registers[REGISTER_H]; }
-void move_am() { Registers[REGISTER_A] = Registers[REGISTER_M]; }
-void move_ba() { Registers[REGISTER_B] = Registers[REGISTER_A]; }
-void move_bb() {}
-void move_bl() { Registers[REGISTER_B] = Registers[REGISTER_L]; }
-void move_bh() { Registers[REGISTER_B] = Registers[REGISTER_H]; }
-void move_bm() { Registers[REGISTER_B] = Registers[REGISTER_M]; }
-void move_la() { Registers[REGISTER_L] = Registers[REGISTER_A]; }
-void move_lb() { Registers[REGISTER_L] = Registers[REGISTER_B]; }
-void move_ll() {}
-void move_lh() { Registers[REGISTER_L] = Registers[REGISTER_H]; }
-void move_lm() { Registers[REGISTER_L] = Registers[REGISTER_M]; }
-void move_ha() { Registers[REGISTER_H] = Registers[REGISTER_A]; }
-void move_hb() { Registers[REGISTER_H] = Registers[REGISTER_B]; }
-void move_hl() { Registers[REGISTER_H] = Registers[REGISTER_L]; }
-void move_hh() {}
-void move_hm() { Registers[REGISTER_H] = Registers[REGISTER_M]; }
-void move_ma() { Registers[REGISTER_M] = Registers[REGISTER_A]; }
-void move_mb() { Registers[REGISTER_M] = Registers[REGISTER_B]; }
-void move_ml() { Registers[REGISTER_M] = Registers[REGISTER_L]; }
-void move_mh() { Registers[REGISTER_M] = Registers[REGISTER_H]; }
-void move_mm() {}
-
-void (*operations[])() = {
+/* Ordered opcode implementations. */
+void (*opcodes[])() = {
   nop, decx, incx, decy, incy, clc, stc, cli,
   sti, nop, ldaa_imm, ldab_imm, lx, lx, ldx_imm, ldy_imm,
   jmp, jcc, jcs, jne, jeq, jmi, jpl, jhi,
@@ -1520,65 +1450,18 @@ void (*operations[])() = {
   sbcp, xchg, stora_indir_x, storb_indir_x, stox_indir_x, stoy_indir_x, push_h, pop_h
 };
 
-void execute(BYTE opcode) {
-  operations[opcode]();
-}
-
+/**
+ * Emulates the program loaded into memory.
+ */
 void emulate() {
-  BYTE opcode;
-  int sanity;
-
-  ProgramCounter = 0;
+  // Initialise the program state.
   halt = false;
-  memory_in_range = true;
-  sanity = 0;
+  ProgramCounter = 0;
 
-  // printf("                    A  B  L  H  X  Y  SP\n");
-
-  while ((!halt) && (memory_in_range) && (sanity < 200)) {
-    // printf("%04X ", ProgramCounter);                       // Print current address
-    opcode = fetch();
-    execute(opcode);
-
-    // printf("%s  ", opcode_mneumonics[opcode]);              // Print current opcode
-    //
-    // printf("%02X ", Registers[REGISTER_A]);
-    // printf("%02X ", Registers[REGISTER_B]);
-    // printf("%02X ", Registers[REGISTER_L]);
-    // printf("%02X ", Registers[REGISTER_H]);
-    // printf("%02X ", Index_Registers[REGISTER_X]);
-    // printf("%02X ", Index_Registers[REGISTER_Y]);
-    // printf("%04X ", StackPointer);                          // Print Stack Pointer
-    //
-    // if ((Flags & FLAG_I) == FLAG_I) {
-    //   printf("I=1 ");
-    // } else {
-    //   printf("I=0 ");
-    // }
-    //
-    // if ((Flags & FLAG_Z) == FLAG_Z) {
-    //   printf("Z=1 ");
-    // } else {
-    //   printf("Z=0 ");
-    // }
-    //
-    // if ((Flags & FLAG_N) == FLAG_N) {
-    //   printf("N=1 ");
-    // } else {
-    //   printf("N=0 ");
-    // }
-    //
-    // if ((Flags & FLAG_C) == FLAG_C) {
-    //   printf("C=1 ");
-    // } else {
-    //   printf("C=0 ");
-    // }
-    //
-    // printf("\n");              // New line
-    sanity++;
+  // Execute each opcode recieved until program executes halt.
+  while (!halt) {
+    opcodes[fetch()]();
   }
-
-  // printf("\n");        // New line
 }
 
 ////////////////////////////////////////////////////////////////////////////////
