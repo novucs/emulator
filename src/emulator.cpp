@@ -1040,31 +1040,26 @@ void rra() { rr(&Registers[REGISTER_A]); }
 void rrb() { rr(&Registers[REGISTER_B]); }
 
 /* MOVE - Transfers from one register to another. */
-void move_aa() {}
 void move_ab() { Registers[REGISTER_A] = Registers[REGISTER_B]; }
 void move_al() { Registers[REGISTER_A] = Registers[REGISTER_L]; }
 void move_ah() { Registers[REGISTER_A] = Registers[REGISTER_H]; }
 void move_am() { Registers[REGISTER_A] = Registers[REGISTER_M]; }
 void move_ba() { Registers[REGISTER_B] = Registers[REGISTER_A]; }
-void move_bb() {}
 void move_bl() { Registers[REGISTER_B] = Registers[REGISTER_L]; }
 void move_bh() { Registers[REGISTER_B] = Registers[REGISTER_H]; }
 void move_bm() { Registers[REGISTER_B] = Registers[REGISTER_M]; }
 void move_la() { Registers[REGISTER_L] = Registers[REGISTER_A]; }
 void move_lb() { Registers[REGISTER_L] = Registers[REGISTER_B]; }
-void move_ll() {}
 void move_lh() { Registers[REGISTER_L] = Registers[REGISTER_H]; }
 void move_lm() { Registers[REGISTER_L] = Registers[REGISTER_M]; }
 void move_ha() { Registers[REGISTER_H] = Registers[REGISTER_A]; }
 void move_hb() { Registers[REGISTER_H] = Registers[REGISTER_B]; }
 void move_hl() { Registers[REGISTER_H] = Registers[REGISTER_L]; }
-void move_hh() {}
 void move_hm() { Registers[REGISTER_H] = Registers[REGISTER_M]; }
 void move_ma() { Registers[REGISTER_M] = Registers[REGISTER_A]; }
 void move_mb() { Registers[REGISTER_M] = Registers[REGISTER_B]; }
 void move_ml() { Registers[REGISTER_M] = Registers[REGISTER_L]; }
 void move_mh() { Registers[REGISTER_M] = Registers[REGISTER_H]; }
-void move_mm() {}
 
 /* LDX - Loads memory into index register X. */
 void ldx_imm() { Index_Registers[REGISTER_X] = fetch(); }
@@ -1299,15 +1294,15 @@ void (*opcodes[])() = {
   lods_abs_y, adc_am, sbc_am, add_am, sub_am, cmp_am, or_am, and_am,
   xor_am, bit_am, ldaa_indir_x, ldab_indir_x, swi, rti, ldx_indir_x, ldy_indir_x,
   lods_indir, adc_bl, sbc_bl, add_bl, sub_bl, cmp_bl, or_bl, and_bl,
-  xor_bl, bit_bl, stos_abs, move_aa, move_ba, move_la, move_ha, move_ma,
+  xor_bl, bit_bl, stos_abs, nop, move_ba, move_la, move_ha, move_ma,
   lods_indir_x, adc_bh, sbc_bh, add_bh, sub_bh, cmp_bh, or_bh, and_bh,
-  xor_bh, bit_bh, stos_abs_x, move_ab, move_bb, move_lb, move_hb, move_mb,
+  xor_bh, bit_bh, stos_abs_x, move_ab, nop, move_lb, move_hb, move_mb,
   nop, adc_bm, sbc_bm, add_bm, sub_bm, cmp_bm, or_bm, and_bm,
-  xor_bm, bit_bm, stos_abs_y, move_al, move_bl, move_ll, move_hl, move_ml,
+  xor_bm, bit_bm, stos_abs_y, move_al, move_bl, nop, move_hl, move_ml,
   nop, nop, nop, sbia, sbib, cpia, cpib, oria,
-  orib, nop, stos_indir, move_ah, move_bh, move_lh, move_hh, move_mh,
+  orib, nop, stos_indir, move_ah, move_bh, move_lh, nop, move_mh,
   inc_abs, dec_abs, rrc_abs, rlc_abs, sal_abs, sar_abs, lsr_abs, com_abs,
-  rol_abs, rr_abs, stos_indir_x, move_am, move_bm, move_lm, move_hm, move_mm,
+  rol_abs, rr_abs, stos_indir_x, move_am, move_bm, move_lm, move_hm, nop,
   inc_abs_x, dec_abs_x, rrc_abs_x, rlc_abs_x, sal_abs_x, sar_abs_x, lsr_abs_x, com_abs_x,
   rol_abs_x, rr_abs_x, stora_abs, storb_abs, stox_abs, stoy_abs, push_a, pop_a,
   inc_abs_y, dec_abs_y, rrc_abs_y, rlc_abs_y, sal_abs_y, sar_abs_y, lsr_abs_y, com_abs_y,
