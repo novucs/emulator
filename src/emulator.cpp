@@ -599,7 +599,7 @@ void _bit(int accumulator, int reg) {
  *
  * @param accumulator the accumulator to subtract from.
  */
-void sbi_accumulator(int accumulator) {
+void sbi(BYTE accumulator) {
   WORD result = fetch() - Registers[accumulator];
 
   if (is_flag_set(FLAG_C))
@@ -614,7 +614,7 @@ void sbi_accumulator(int accumulator) {
  *
  * @param accumulator the accumulator to use.
  */
-void ori_accumulator(int accumulator) {
+void ori(BYTE accumulator) {
   set_flags_zn(Registers[accumulator] |= fetch());
 }
 
@@ -623,7 +623,7 @@ void ori_accumulator(int accumulator) {
  *
  * @param address the memory address.
  */
-void inc_memory(WORD address) {
+void inc(WORD address) {
   set_flags_zn(++Memory[address]);
 }
 
@@ -632,266 +632,136 @@ void inc_memory(WORD address) {
  *
  * @param address the memory address.
  */
-void dec_memory(WORD address) {
+void dec(WORD address) {
   set_flags_zn(--Memory[address]);
 }
 
 /**
- * Rotates memory right through carry.
+ * Rotates memory or accumulator right through carry.
  *
- * @param address the memory address.
+ * @param data the memory or accumulator.
  */
-void rrc_memory(WORD address) {
+void rrc(BYTE *data) {
   // Rotate memory to the right.
-  BYTE result = Memory[address] >> 1;
+  BYTE result = *data >> 1;
 
   if (is_flag_set(FLAG_C))
     result += 0x80;
 
   // Update the carry flag.
-  set_flag(Memory[address] % 2 != 0, FLAG_C);
+  set_flag(*data % 2 != 0, FLAG_C);
 
-  // Update memory and set negative and zero flags.
-  Memory[address] = result;
+  // Update data and set negative and zero flags.
+  *data = result;
   set_flags_zn(result);
 }
 
 /**
- * Rotates accumulator right through carry.
+ * Rotates memory or accumulator left through carry.
  *
- * @param accumulator the accumulator to use.
+ * @param data the memory or accumulator.
  */
-void rrc_accumulator(int accumulator) {
-  // Rotate accumulator to the right.
-  BYTE result = Registers[accumulator] >> 1;
-
-  if (is_flag_set(FLAG_C))
-    result += 0x80;
-
-  // Update the carry flag.
-  set_flag(Registers[accumulator] % 2 != 0, FLAG_C);
-
-  // Update accumulator and set negative and zero flags.
-  Registers[accumulator] = result;
-  set_flags_zn(result);
-}
-
-/**
- * Rotates memory left through carry.
- *
- * @param address the memory address.
- */
-void rlc_memory(WORD address) {
+void rlc(BYTE *data) {
   // Rotate memory to the left.
-  BYTE result = Memory[address] << 1;
+  BYTE result = *data << 1;
 
   if (is_flag_set(FLAG_C))
     result += 1;
 
   // Update the carry flag.
-  set_flag(Memory[address] >= 0x80, FLAG_C);
+  set_flag(*data >= 0x80, FLAG_C);
 
-  // Update accumulator and set negative and zero flags.
-  Memory[address] = result;
+  // Update data and set negative and zero flags.
+  *data = result;
   set_flags_zn(result);
 }
 
 /**
- * Rotates accumulator right through carry.
+ * Arithmetic shift left memory or accumulator.
  *
- * @param accumulator the accumulator to use.
+ * @param data the memory or accumulator.
  */
-void rlc_accumulator(int accumulator) {
-  // Rotate accumulator to the left.
-  BYTE result = Registers[accumulator] << 1;
-
-  if (is_flag_set(FLAG_C))
-    result += 1;
-
+void sal(BYTE *data) {
   // Update the carry flag.
-  set_flag(Registers[accumulator] >= 0x80, FLAG_C);
+  set_flag(*data >= 0x80, FLAG_C);
 
-  // Update accumulator and set negative and zero flags.
-  Registers[accumulator] = result;
-  set_flags_zn(result);
-}
-
-void sal_memory(WORD address) {
-  // Update the carry flag.
-  set_flag(Memory[address] >= 0x80, FLAG_C);
-
-  // Update memory and set negative and zero flags.
-  Memory[address] <<= 1;
-  set_flags_zn(Memory[address]);
+  // Update data and set negative and zero flags.
+  set_flags_zn(*data <<= 1);
 }
 
 /**
- * Arithmetic shift left accumulator.
+ * Arithmetic shift right memory or accumulator.
  *
- * @param accumulator the accumulator.
+ * @param data the memory or accumulator.
  */
-void sal_accumulator(int accumulator) {
-  WORD result = Registers[accumulator] << 1;
-  Registers[accumulator] = result;
-  set_flags_znc(result);
-}
-
-/**
- * Arithmetic shift right memory.
- *
- * @param address the memory address.
- */
-void sar_memory(WORD address) {
+void sar(BYTE *data) {
   // Shift memory to the right.
-  BYTE result = Memory[address] >> 1;
+  BYTE result = *data >> 1;
 
-  if (Memory[address] >= 0x80)
+  if (*data >= 0x80)
     result += 0x80;
 
   // Update the carry flag.
-  set_flag(Memory[address] % 2 != 0, FLAG_C);
+  set_flag(*data % 2 != 0, FLAG_C);
 
-  // Update memory and set negative and zero flags.
-  Memory[address] = result;
-  set_flags_zn(result);
+  // Update data and set negative and zero flags.
+  set_flags_zn(*data = result);
 }
 
 /**
- * Arithmetic shift right accumulator.
+ * Shift right memory or accumulator.
  *
- * @param the accumulator to use.
+ * @param data the memory or accumulator.
  */
-void sar_accumulator(int accumulator) {
-  // Shift accumulator to the right.
-  BYTE result = Registers[accumulator] >> 1;
-
-  if (Registers[accumulator] >= 0x80)
-    result += 0x80;
-
+void lsr(BYTE *data) {
   // Update the carry flag.
-  set_flag(Registers[accumulator] % 2 != 0, FLAG_C);
+  set_flag(*data % 2 != 0, FLAG_C);
 
-  // Update accumulator and set negative and zero flags.
-  Registers[accumulator] = result;
-  set_flags_zn(result);
+  // Update data and set negative and zero flags.
+  set_flags_zn(*data >>= 1);
 }
 
 /**
- * Shift right memory.
+ * Negate memory or accumulator.
  *
- * @param address the memory address.
+ * @param data the memory or accumulator.
  */
-void lsr_memory(WORD address) {
-  // Update the carry flag.
-  set_flag(Memory[address] % 2 != 0, FLAG_C);
-
-  // Update memory and set negative and zero flags.
-  Memory[address] >>= 1;
-  set_flags_zn(Memory[address]);
-}
-
-/**
- * Shift right accumulator.
- *
- * @param accumulator the accumulator to use.
- */
-void lsr_accumulator(int accumulator) {
-  // Update the carry flag.
-  set_flag(Registers[accumulator] % 2 != 0, FLAG_C);
-
-  // Update memory and set negative and zero flags.
-  Registers[accumulator] >>= 1;
-  set_flags_zn(Registers[accumulator]);
-}
-
-/**
- * Negate memory.
- *
- * @param address the memory address.
- */
-void com_memory(WORD address) {
-  WORD result = ~Memory[address];
-  Memory[address] = result;
+void com(BYTE *data) {
+  WORD result = ~*data;
+  *data = result;
   set_flags_znc(result);
 }
 
 /**
- * Negate accumulator.
+ * Rotate memory or accumulator to the left without carry.
  *
- * @param accumulator the accumulator to use.
+ * @param data the memory or accumulator.
  */
-void com_accumulator(int accumulator) {
-  WORD result = ~Registers[accumulator];
-  Registers[accumulator] = result;
-  set_flags_znc(result);
-}
-
-/**
- * Rotate memory to the left without carry.
- *
- * @param address the memory address.
- */
-void rol_memory(WORD address) {
+void rol(BYTE *data) {
   // Rotate memory to the left.
-  BYTE result = Memory[address] << 1;
+  BYTE result = *data << 1;
 
-  if (Memory[address] >= 0x80)
+  if (*data >= 0x80)
     result++;
 
-  // Update memory and set negative and zero flags.
-  Memory[address] = result;
-  set_flags_zn(result);
+  // Update data and set negative and zero flags.
+  set_flags_zn(*data = result);
 }
 
 /**
- * Rotate accumulator to the left without carry.
+ * Rotate memory or accumulator to the right without carry.
  *
- * @param accumulator the accumulator to use.
+ * @param data the memory or accumulator.
  */
-void rol_accumulator(int accumulator) {
-  // Rotate accumulator to the left.
-  BYTE result = Registers[accumulator] << 1;
-
-  if (Registers[accumulator] >= 0x80)
-    result++;
-
-  // Update accumulator and set negative and zero flags.
-  Registers[accumulator] = result;
-  set_flags_zn(result);
-}
-
-/**
- * Rotate memory to the right without carry.
- *
- * @param address the memory address.
- */
-void rr_memory(WORD address) {
+void rr(BYTE *data) {
   // Rotate memory to the right.
-  BYTE result = Memory[address] >> 1;
+  BYTE result = *data >> 1;
 
-  if (Memory[address] % 2 != 0)
+  if (*data % 2 != 0)
     result += 0x80;
 
-  // Update memory and set negative and zero flags.
-  Memory[address] = result;
-  set_flags_zn(result);
-}
-
-/**
- * Rotate accumulator to the right without carry.
- *
- * @param accumulator the accumulator to use.
- */
-void rr_accumulator(int accumulator) {
-  // Rotate accumulator to the right.
-  BYTE result = Registers[accumulator] >> 1;
-
-  if (Registers[accumulator] % 2 != 0)
-    result += 0x80;
-
-  // Update accumulator and set negative and zero flags.
-  Registers[accumulator] = result;
-  set_flags_zn(result);
+  // Update data and set negative and zero flags.
+  set_flags_zn(*data = result);
 }
 
 /**
@@ -1042,10 +912,10 @@ void bit_bh() { _bit(REGISTER_B, REGISTER_H); }
 void bit_bm() { _bit(REGISTER_B, REGISTER_M); }
 
 /* SBIA - Data subtracted from accumulator A with carry. */
-void sbia() { sbi_accumulator(REGISTER_A); }
+void sbia() { sbi(REGISTER_A); }
 
 /* SBIB - Data subtracted from accumulator B with carry. */
-void sbib() { sbi_accumulator(REGISTER_B); }
+void sbib() { sbi(REGISTER_B); }
 
 /* CPIA - Data compared to accumulator A. */
 void cpia() { set_flags_znc(fetch() - Registers[REGISTER_A]); }
@@ -1054,15 +924,15 @@ void cpia() { set_flags_znc(fetch() - Registers[REGISTER_A]); }
 void cpib() { set_flags_znc(fetch() - Registers[REGISTER_B]); }
 
 /* ORIA - Data bitwise inclusive or with accumulator A. */
-void oria() { ori_accumulator(REGISTER_A); }
+void oria() { ori(REGISTER_A); }
 
 /* ORIB - Data bitwise inclusive or with accumulator B. */
-void orib() { ori_accumulator(REGISTER_B); }
+void orib() { ori(REGISTER_B); }
 
 /* INC - Increment memory. */
-void inc_abs() { inc_memory(fetch_address_abs()); }
-void inc_abs_x() { inc_memory(fetch_address_abs_x()); }
-void inc_abs_y() { inc_memory(fetch_address_abs_y()); }
+void inc_abs() { inc(fetch_address_abs()); }
+void inc_abs_x() { inc(fetch_address_abs_x()); }
+void inc_abs_y() { inc(fetch_address_abs_y()); }
 
 /* INCA - Increment accumulator A. */
 void inca() { set_flags_zn(++Registers[REGISTER_A]); }
@@ -1071,9 +941,9 @@ void inca() { set_flags_zn(++Registers[REGISTER_A]); }
 void incb() { set_flags_zn(++Registers[REGISTER_B]); }
 
 /* DEC - Decrement memory. */
-void dec_abs() { dec_memory(fetch_address_abs()); }
-void dec_abs_x() { dec_memory(fetch_address_abs_x()); }
-void dec_abs_y() { dec_memory(fetch_address_abs_y()); }
+void dec_abs() { dec(fetch_address_abs()); }
+void dec_abs_x() { dec(fetch_address_abs_x()); }
+void dec_abs_y() { dec(fetch_address_abs_y()); }
 
 /* DECA - Decrement accumulator A. */
 void deca() { set_flags_zn(--Registers[REGISTER_A]); }
@@ -1082,92 +952,92 @@ void deca() { set_flags_zn(--Registers[REGISTER_A]); }
 void decb() { set_flags_zn(--Registers[REGISTER_B]); }
 
 /* RRC - Rotate right through carry memory. */
-void rrc_abs() { rrc_memory(fetch_address_abs()); }
-void rrc_abs_x() { rrc_memory(fetch_address_abs_x()); }
-void rrc_abs_y() { rrc_memory(fetch_address_abs_y()); }
+void rrc_abs() { rrc(&Memory[fetch_address_abs()]); }
+void rrc_abs_x() { rrc(&Memory[fetch_address_abs_x()]); }
+void rrc_abs_y() { rrc(&Memory[fetch_address_abs_y()]); }
 
 /* RRCA - Rotate right through carry accumulator A. */
-void rrca() { rrc_accumulator(REGISTER_A); }
+void rrca() { rrc(&Registers[REGISTER_A]); }
 
 /* RRCB - Rotate right through carry accumulator B. */
-void rrcb() { rrc_accumulator(REGISTER_B); }
+void rrcb() { rrc(&Registers[REGISTER_B]); }
 
 /* RLC - Rotate left through carry memory. */
-void rlc_abs() { rlc_memory(fetch_address_abs()); }
-void rlc_abs_x() { rlc_memory(fetch_address_abs_x()); }
-void rlc_abs_y() { rlc_memory(fetch_address_abs_y()); }
+void rlc_abs() { rlc(&Memory[fetch_address_abs()]); }
+void rlc_abs_x() { rlc(&Memory[fetch_address_abs_x()]); }
+void rlc_abs_y() { rlc(&Memory[fetch_address_abs_y()]); }
 
 /* RLCA - Rotate left through carry accumulator A. */
-void rlca() { rlc_accumulator(REGISTER_A); }
+void rlca() { rlc(&Registers[REGISTER_A]); }
 
 /* RLCB - Rotate left through carry accumulator B. */
-void rlcb() { rlc_accumulator(REGISTER_B); }
+void rlcb() { rlc(&Registers[REGISTER_B]); }
 
 /* SAL - Arithmetic shift left memory. */
-void sal_abs() { sal_memory(fetch_address_abs()); }
-void sal_abs_x() { sal_memory(fetch_address_abs_x()); }
-void sal_abs_y() { sal_memory(fetch_address_abs_y()); }
+void sal_abs() { sal(&Memory[fetch_address_abs()]); }
+void sal_abs_x() { sal(&Memory[fetch_address_abs_x()]); }
+void sal_abs_y() { sal(&Memory[fetch_address_abs_y()]); }
 
 /* SALA - Arithmetic shift left accumulator A. */
-void sala() { sal_accumulator(REGISTER_A); }
+void sala() { sal(&Registers[REGISTER_A]); }
 
 /* SALB - Arithmetic shift left accumulator B. */
-void salb() { sal_accumulator(REGISTER_B); }
+void salb() { sal(&Registers[REGISTER_B]); }
 
 /* SAR - Arithmetic shift right memory. */
-void sar_abs() { sar_memory(fetch_address_abs()); }
-void sar_abs_x() { sar_memory(fetch_address_abs_x()); }
-void sar_abs_y() { sar_memory(fetch_address_abs_y()); }
+void sar_abs() { sar(&Memory[fetch_address_abs()]); }
+void sar_abs_x() { sar(&Memory[fetch_address_abs_x()]); }
+void sar_abs_y() { sar(&Memory[fetch_address_abs_y()]); }
 
 /* SARA - Arithmetic shift right accumulator A. */
-void sara() { sar_accumulator(REGISTER_A); }
+void sara() { sar(&Registers[REGISTER_A]); }
 
 /* SARB - Arithmetic shift right accumulator B. */
-void sarb() { sar_accumulator(REGISTER_B); }
+void sarb() { sar(&Registers[REGISTER_B]); }
 
 /* LSR - Shift right memory. */
-void lsr_abs() { lsr_memory(fetch_address_abs()); }
-void lsr_abs_x() { lsr_memory(fetch_address_abs_x()); }
-void lsr_abs_y() { lsr_memory(fetch_address_abs_y()); }
+void lsr_abs() { lsr(&Memory[fetch_address_abs()]); }
+void lsr_abs_x() { lsr(&Memory[fetch_address_abs_x()]); }
+void lsr_abs_y() { lsr(&Memory[fetch_address_abs_y()]); }
 
 /* LSRA - Shift right accumulator A. */
-void lsra() { lsr_accumulator(REGISTER_A); }
+void lsra() { lsr(&Registers[REGISTER_A]); }
 
 /* LSRB - Shift right accumulator B. */
-void lsrb() { lsr_accumulator(REGISTER_B); }
+void lsrb() { lsr(&Registers[REGISTER_B]); }
 
 /* COM - Negate memory. */
-void com_abs() { com_memory(fetch_address_abs()); }
-void com_abs_x() { com_memory(fetch_address_abs_x()); }
-void com_abs_y() { com_memory(fetch_address_abs_y()); }
+void com_abs() { com(&Memory[fetch_address_abs()]); }
+void com_abs_x() { com(&Memory[fetch_address_abs_x()]); }
+void com_abs_y() { com(&Memory[fetch_address_abs_y()]); }
 
 /* COMA - Negate accumulator A. */
-void coma() { com_accumulator(REGISTER_A); }
+void coma() { com(&Registers[REGISTER_A]); }
 
 /* COMB - Negate accumulator B. */
-void comb() { com_accumulator(REGISTER_B); }
+void comb() { com(&Registers[REGISTER_B]); }
 
 /* ROL - Rotate memory left without carry. */
-void rol_abs() { rol_memory(fetch_address_abs()); }
-void rol_abs_x() { rol_memory(fetch_address_abs_x()); }
-void rol_abs_y() { rol_memory(fetch_address_abs_y()); }
+void rol_abs() { rol(&Memory[fetch_address_abs()]); }
+void rol_abs_x() { rol(&Memory[fetch_address_abs_x()]); }
+void rol_abs_y() { rol(&Memory[fetch_address_abs_y()]); }
 
 /* ROLA - Rotate accumulator A left without carry. */
-void rola() { rol_accumulator(REGISTER_A); }
+void rola() { rol(&Registers[REGISTER_A]); }
 
 /* ROLB - Rotate accumulator B left without carry. */
-void rolb() { rol_accumulator(REGISTER_B); }
+void rolb() { rol(&Registers[REGISTER_B]); }
 
 /* RR - Rotate memory right without carry. */
-void rr_abs() { rr_memory(fetch_address_abs()); }
-void rr_abs_x() { rr_memory(fetch_address_abs_x()); }
-void rr_abs_y() { rr_memory(fetch_address_abs_y()); }
+void rr_abs() { rr(&Memory[fetch_address_abs()]); }
+void rr_abs_x() { rr(&Memory[fetch_address_abs_x()]); }
+void rr_abs_y() { rr(&Memory[fetch_address_abs_y()]); }
 
 /* RRA - Rotate accumulator A right without carry. */
-void rra() { rr_accumulator(REGISTER_A); }
+void rra() { rr(&Registers[REGISTER_A]); }
 
 /* RRB - Rotate accumulator B right without carry. */
-void rrb() { rr_accumulator(REGISTER_B); }
+void rrb() { rr(&Registers[REGISTER_B]); }
 
 /* MOVE - Transfers from one register to another. */
 void move_aa() {}
