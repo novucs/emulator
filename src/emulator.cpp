@@ -649,7 +649,7 @@ void rrc(BYTE *data) {
     result += 0x80;
 
   // Update the carry flag.
-  set_flag(*data % 2 != 0, FLAG_C);
+  set_flag(*data % 2, FLAG_C);
 
   // Update data and set negative and zero flags.
   *data = result;
@@ -666,7 +666,7 @@ void rlc(BYTE *data) {
   BYTE result = *data << 1;
 
   if (is_flag_set(FLAG_C))
-    result += 1;
+    result++;
 
   // Update the carry flag.
   set_flag(*data >= 0x80, FLAG_C);
@@ -702,7 +702,7 @@ void sar(BYTE *data) {
     result += 0x80;
 
   // Update the carry flag.
-  set_flag(*data % 2 != 0, FLAG_C);
+  set_flag(*data % 2, FLAG_C);
 
   // Update data and set negative and zero flags.
   set_flags_zn(*data = result);
@@ -715,7 +715,7 @@ void sar(BYTE *data) {
  */
 void lsr(BYTE *data) {
   // Update the carry flag.
-  set_flag(*data % 2 != 0, FLAG_C);
+  set_flag(*data % 2, FLAG_C);
 
   // Update data and set negative and zero flags.
   set_flags_zn(*data >>= 1);
@@ -757,7 +757,7 @@ void rr(BYTE *data) {
   // Rotate memory to the right.
   BYTE result = *data >> 1;
 
-  if (*data % 2 != 0)
+  if (*data % 2)
     result += 0x80;
 
   // Update data and set negative and zero flags.
