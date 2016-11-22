@@ -2,8 +2,6 @@
 #define MAIN_H
 
 #pragma comment(lib, "wsock32.lib")
-#include <winsock2.h>
-#include <stdio.h>
 
 typedef enum { false, true } bool;
 
