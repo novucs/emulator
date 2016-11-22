@@ -14,11 +14,13 @@
  * @param reg         the register to add.
  */
 void adc(int accumulator, int reg) {
+  // Add register with carry.
   WORD result = registers[accumulator] + registers[reg];
 
   if (is_flag_set(FLAG_C))
     result++;
 
+  // Update accumulator and set flags.
   registers[accumulator] = result;
   set_flags_znc(result);
 }
@@ -38,11 +40,13 @@ void adc_bm() { adc(REGISTER_B, REGISTER_M); }
  * @param reg         the register to subtract.
  */
 void sbc(int accumulator, int reg) {
+  // Subtract register with carry.
   WORD result = registers[accumulator] - registers[reg];
 
   if (is_flag_set(FLAG_C))
     result--;
 
+  // Update accumulator and set flags.
   registers[accumulator] = result;
   set_flags_znc(result);
 }
@@ -191,13 +195,15 @@ void bit_bm() { _bit(REGISTER_B, REGISTER_M); }
  * @param accumulator the accumulator to subtract from.
  */
 void sbi(BYTE accumulator) {
+  // Subtract accumulator from data fetched.
   WORD result = fetch() - registers[accumulator];
 
   if (is_flag_set(FLAG_C))
     result--;
 
-  set_flags_znc(result);
+  // Update accumulator and set flags.
   registers[accumulator] = result;
+  set_flags_znc(result);
 }
 
 /* SBIA - Data subtracted from accumulator A with carry. */
