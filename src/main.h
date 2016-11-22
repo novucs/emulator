@@ -82,7 +82,10 @@ extern bool halt;
 // Functions //
 ///////////////
 
+// Checks if a flag is set.
 bool is_flag_set(BYTE flag);
+
+// Updates the program flags.
 void set_flag(bool state, BYTE flag);
 void set_flag_z(BYTE data);
 void set_flag_n(BYTE data);
@@ -90,14 +93,20 @@ void set_flag_c(WORD data);
 void set_flags_zn(BYTE data);
 void set_flags_znc(WORD data);
 
+// Fetch the next instruction from memory.
 BYTE fetch();
 
+// Joins two bytes to form an address.
 WORD join_address(BYTE higher, BYTE lower);
 
+// Fetch addresses.
 WORD fetch_address_abs();
 WORD fetch_address_abs_x();
 WORD fetch_address_abs_y();
 WORD fetch_address_indir();
 WORD fetch_address_indir_x();
+
+// Executes an opcode.
+void execute(BYTE opcode);
 
 #endif /* End of include guard: MAIN_H */

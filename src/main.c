@@ -9,25 +9,31 @@
 #include <stdio.h>
 #include "main.h"
 
+// Socket details.
 SOCKADDR_IN server_addr;
 SOCKADDR_IN client_addr;
 SOCKET sock;
 WSADATA data;
 
+// ASM program loading buffers.
 char input_buffer[MAX_BUFFER_SIZE];
 char hex_file[MAX_BUFFER_SIZE];
 char trc_file[MAX_BUFFER_SIZE];
 
+// Registers.
 BYTE registers[5];
 BYTE index_registers[2];
 BYTE flags;
 WORD program_counter;
 WORD stack_pointer;
 
+// Memory.
 BYTE memory[MEMORY_SIZE];
 
+// Control variables.
 bool halt = false;
 
+// Ordered opcode functions.
 void (*opcodes[])() = {
   nop, decx, incx, decy, incy, clc, stc, cli,
   sti, nop, ldaa_imm, ldab_imm, lx, lx, ldx_imm, ldy_imm,
@@ -188,6 +194,15 @@ WORD fetch_address_indir_x() {
 }
 
 /**
+ * Executes an opcode.
+ *
+ * @param the opcode to execute.
+ */
+void execute(BYTE opcode) {
+  opcodes[opcode]();
+}
+
+/**
  * Emulates the program loaded into memory.
  */
 void emulate() {
@@ -196,7 +211,7 @@ void emulate() {
 
   // Execute each opcode recieved until program executes halt.
   while (!halt) {
-    opcodes[fetch()]();
+    execute(fetch());
   }
 }
 
