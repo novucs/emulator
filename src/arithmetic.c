@@ -1,3 +1,10 @@
+/**
+ * @file arithmetic.c
+ * @author William Randall (16002374)
+ * @date 22nd November 2016
+ * @brief all arithmetic opcode implementations.
+ */
+
 #include "arithmetic.h"
 
 /**

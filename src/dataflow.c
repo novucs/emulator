@@ -1,3 +1,10 @@
+/**
+ * @file dataflow.c
+ * @author William Randall (16002374)
+ * @date 22nd November 2016
+ * @brief all dataflow opcode implementations.
+ */
+
 #include "dataflow.h"
 
 /* PUSH - Pushes register onto the stack. */

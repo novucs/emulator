@@ -1,3 +1,10 @@
+/**
+ * @file main.h
+ * @author William Randall (16002374)
+ * @date 22nd November 2016
+ * @brief Complete 60 marks emulator for CaNS assignment 1 at UWE.
+ */
+
 #ifndef MAIN_H
 #define MAIN_H
 
