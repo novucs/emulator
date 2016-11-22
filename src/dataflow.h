@@ -70,7 +70,7 @@ void nop(); // 0x2C
 // Wait for interrupt.
 void hlt(); // 0x2D
 
-// Software interupt.
+// Software interrupt.
 void swi(); // 0x5C
 
 // Return from software interrupt.
