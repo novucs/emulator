@@ -1340,7 +1340,6 @@ void test_and_mark() {
     }
 
     // Clear registers and Memory
-    memset(registers, 0 sizeof(registers));
     registers[REGISTER_A] = 0;
     registers[REGISTER_B] = 0;
     registers[REGISTER_L] = 0;
