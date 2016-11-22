@@ -1,27 +1,24 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#pragma comment(lib, "wsock32.lib")
 #include <winsock2.h>
 #include <stdio.h>
 
 typedef enum { false, true } bool;
+
+#define WORD unsigned short
+#define BYTE unsigned char
 
 #include "arithmetic.h"
 #include "dataflow.h"
 #include "move.h"
 #include "transput.h"
 
-#pragma comment(lib, "wsock32.lib")
-
 #define STUDENT_NUMBER "16002374"
 #define IP_ADDRESS_SERVER "127.0.0.1"
 #define PORT_SERVER 0x1984
 #define PORT_CLIENT 0x1985
-
-#define WORD  unsigned short
-#define DWORD unsigned long
-#define BYTE  unsigned char
-
 #define MAX_FILENAME_SIZE 500
 #define MAX_BUFFER_SIZE 500
 
@@ -33,6 +30,8 @@ typedef enum { false, true } bool;
 #define FLAG_Z 0x04
 #define FLAG_N 0x02
 #define FLAG_C 0x01
+extern BYTE flags;
+
 #define REGISTER_M 4
 #define REGISTER_A 3
 #define REGISTER_B 2
@@ -44,7 +43,6 @@ extern BYTE registers[5];
 #define REGISTER_Y 1
 extern BYTE index_registers[2];
 
-extern BYTE flags;
 extern WORD program_counter;
 extern WORD stack_pointer;
 
@@ -75,12 +73,6 @@ extern BYTE memory[MEMORY_SIZE];
 
 extern bool halt;
 
-/////////////
-// Opcodes //
-/////////////
-
-extern void (*opcodes[])();
-
 ///////////////
 // Functions //
 ///////////////
@@ -103,4 +95,4 @@ WORD fetch_address_abs_y();
 WORD fetch_address_indir();
 WORD fetch_address_indir_x();
 
-#endif /* end of include guard: MAIN_H */
+#endif /* End of include guard: MAIN_H */
