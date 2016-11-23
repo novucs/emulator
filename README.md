@@ -11,5 +11,5 @@ Clone this source code, run `make` from *bash*.
 
 ### Windows
 - Create a new VisualStudio C++ empty console application
-- Copy all files from 'src' into 'Source Files'
-- Ensure '_CRT_SECURE_NO_WARNINGS' and '_WINSOCK_DEPRECATED_NO_WARNINGS' have been added to the project preprocessor definitions
+- Copy all files from `src` into `Source Files`
+- Ensure `_CRT_SECURE_NO_WARNINGS` and `_WINSOCK_DEPRECATED_NO_WARNINGS` have been added to the project preprocessor definitions
