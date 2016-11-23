@@ -10,6 +10,6 @@ To compile and run this emulator, you need:
 Clone this source code, run `make` from *bash*.
 
 ### Windows
-Create new VisualStudio project, copy code in and run.
-
-WARNING: Compiling and running on Windows has *Not been tested*, I could not get access to a Windows machine in time for the submission.
+- Create a new VisualStudio C++ empty console application
+- Copy all files from 'src' into 'Source Files'
+- Ensure '_CRT_SECURE_NO_WARNINGS' and '_WINSOCK_DEPRECATED_NO_WARNINGS' have been added to the project preprocessor definitions
